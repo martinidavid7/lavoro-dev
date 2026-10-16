@@ -42,5 +42,7 @@ export interface JobPostingFilters {
   title?: string
   work_mode?: WorkMode
   contract_type?: ContractType
+  /** Id of the company that published the job postings. */
+  company?: number
   page?: number
 }

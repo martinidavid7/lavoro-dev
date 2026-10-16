@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useFavoritesStore } from '@/stores/favorites'
@@ -12,6 +13,16 @@ const router = useRouter()
 const auth = useAuthStore()
 const favorites = useFavoritesStore()
 const notifications = useNotificationsStore()
+
+// "Offerte" and "Le mie offerte" are the same route with a different query,
+// so the active link is decided here instead of by RouterLink.
+const isOwnListing = computed(
+  () => route.name === 'home' && route.query.azienda === String(auth.user?.id),
+)
+const isAllListing = computed(() => route.name === 'home' && !route.query.azienda)
+
+const navLink = 'rounded-lg px-3 py-2 text-slate-600 hover:text-slate-900'
+const activeLink = 'bg-slate-100 text-slate-900'
 
 async function logout() {
   try {
@@ -33,12 +44,14 @@ async function logout() {
       </RouterLink>
 
       <nav class="flex items-center gap-1 text-sm font-medium">
+        <RouterLink to="/" :class="[navLink, { [activeLink]: isAllListing }]">Offerte</RouterLink>
         <RouterLink
-          to="/"
-          class="rounded-lg px-3 py-2 text-slate-600 hover:text-slate-900"
-          exact-active-class="bg-slate-100 text-slate-900"
+          v-if="auth.isCompany && auth.user"
+          :to="{ name: 'home', query: { azienda: auth.user.id } }"
+          :class="[navLink, { [activeLink]: isOwnListing }]"
+          data-test="my-job-postings"
         >
-          Offerte
+          Le mie offerte
         </RouterLink>
         <RouterLink
           v-if="auth.isCompany"

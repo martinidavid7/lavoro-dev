@@ -38,7 +38,7 @@ class JobPosting extends Model
     }
 
     /**
-     * Applies the listing filters (title, work_mode, contract_type).
+     * Applies the listing filters (title, work_mode, contract_type, company).
      *
      * @param  Builder<self>  $query
      * @param  array<string, mixed>  $filters
@@ -48,6 +48,7 @@ class JobPosting extends Model
         $query
             ->when($filters['title'] ?? null, fn (Builder $q, string $title) => $q->where('title', 'like', "%{$title}%"))
             ->when($filters['work_mode'] ?? null, fn (Builder $q, $workMode) => $q->where('work_mode', $workMode))
-            ->when($filters['contract_type'] ?? null, fn (Builder $q, $contractType) => $q->where('contract_type', $contractType));
+            ->when($filters['contract_type'] ?? null, fn (Builder $q, $contractType) => $q->where('contract_type', $contractType))
+            ->when($filters['company'] ?? null, fn (Builder $q, $companyId) => $q->where('company_id', $companyId));
     }
 }

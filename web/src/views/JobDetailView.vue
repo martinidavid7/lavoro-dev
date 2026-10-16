@@ -74,7 +74,12 @@ async function remove() {
         <div class="space-y-3">
           <div>
             <h1 class="text-2xl font-bold tracking-tight text-slate-900">{{ job.title }}</h1>
-            <p class="mt-1 text-slate-500">{{ job.company.name }}</p>
+            <RouterLink
+              :to="{ name: 'home', query: { azienda: job.company.id } }"
+              class="mt-1 inline-block text-slate-500 hover:text-indigo-600"
+            >
+              {{ job.company.name }}
+            </RouterLink>
           </div>
           <JobBadges :job="job" />
         </div>

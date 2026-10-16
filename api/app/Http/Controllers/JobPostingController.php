@@ -19,7 +19,7 @@ class JobPostingController extends Controller
     /**
      * GET /api/job-postings — paginated list, newest first.
      *
-     * Optional query string filters: ?title=dev&work_mode=1&contract_type=2
+     * Optional query string filters: ?title=dev&work_mode=1&contract_type=2&company=5
      */
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -27,6 +27,7 @@ class JobPostingController extends Controller
             'title' => ['nullable', 'string', 'max:100'],
             'work_mode' => ['nullable', Rule::enum(WorkMode::class)],
             'contract_type' => ['nullable', Rule::enum(ContractType::class)],
+            'company' => ['nullable', 'integer', 'min:1'],
         ]);
 
         $jobPostings = JobPosting::query()

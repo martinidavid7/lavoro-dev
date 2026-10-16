@@ -42,6 +42,18 @@ describe('listing', function () {
             ->assertJsonCount(1, 'data');
     });
 
+    it('filters by company', function () {
+        $company = User::factory()->company()->create();
+        JobPosting::factory(2)->for($company, 'company')->create();
+        JobPosting::factory()->create();
+
+        $this->getJson("/api/job-postings?company={$company->id}")
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonPath('data.0.company.id', $company->id)
+            ->assertJsonPath('data.1.company.id', $company->id);
+    });
+
     it('rejects invalid filters', function () {
         $this->getJson('/api/job-postings?work_mode=99')
             ->assertUnprocessable()

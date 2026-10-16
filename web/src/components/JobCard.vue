@@ -29,7 +29,13 @@ const favorites = useFavoritesStore()
               {{ job.title }}
             </RouterLink>
           </h3>
-          <p class="text-sm text-slate-500" data-test="company">{{ job.company.name }}</p>
+          <RouterLink
+            :to="{ name: 'home', query: { azienda: job.company.id } }"
+            class="text-sm text-slate-500 hover:text-indigo-600"
+            data-test="company"
+          >
+            {{ job.company.name }}
+          </RouterLink>
         </div>
         <JobBadges :job="job" />
       </div>

@@ -72,7 +72,7 @@ cd web && npx vitest run
 
 | Method | Route | Description |
 | --- | --- | --- |
-| `GET` | `/api/job-postings` | Paginated list. Filters: `title`, `work_mode`, `contract_type`, `page` |
+| `GET` | `/api/job-postings` | Paginated list. Filters: `title`, `work_mode`, `contract_type`, `company` (company id), `page` |
 | `GET` | `/api/job-postings/{id}` | Detail |
 | `POST` | `/api/job-postings` | Creates a job posting (`title`, `description`, `salary`, `work_mode`, `contract_type`). Companies only |
 | `PATCH` | `/api/job-postings/{id}` | Partial update. Owner only |
@@ -96,6 +96,7 @@ Responses include the translated labels (`work_mode_label`, `contract_type_label
 - [x] Authentication with Sanctum (login and sign-up)
 - [x] **Company** and **candidate** roles; companies publish and manage their own job postings
 - [ ] Candidate profile and applying to job postings
+- [ ] Company page: company details, published job postings and their applicants
 - [ ] Applications and status tracking
 - [ ] Job posting editing in the web app
 - [ ] API documentation (OpenAPI)
