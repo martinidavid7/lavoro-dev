@@ -78,6 +78,13 @@ const candidate = useCandidateStore()
         >
           Candidati
         </RouterLink>
+        <RouterLink
+          v-if="auth.canManage(job)"
+          :to="{ name: 'jobs.edit', params: { id: job.id } }"
+          class="btn-secondary"
+          data-test="edit"
+          >Modifica</RouterLink
+        >
         <button type="button" class="btn-danger px-3 py-1.5" @click="$emit('delete', job)">
           Elimina
         </button>

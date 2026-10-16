@@ -105,6 +105,13 @@ async function remove() {
 
         <div class="flex gap-2">
           <FavoriteButton :job="job" with-label />
+          <RouterLink
+            v-if="auth.canManage(job)"
+            :to="{ name: 'jobs.edit', params: { id: job.id } }"
+            class="btn-secondary"
+            data-test="edit"
+            >Modifica</RouterLink
+          >
           <button v-if="auth.canManage(job)" type="button" class="btn-danger" @click="remove">
             Elimina
           </button>

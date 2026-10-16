@@ -25,6 +25,13 @@ const router = createRouter({
       meta: { guestOnly: true },
     },
     {
+      path: '/offerte/:id(\\d+)/modifica',
+      name: 'jobs.edit',
+      component: () => import('@/views/EditJobView.vue'),
+      props: (route) => ({ id: Number(route.params.id) }),
+      meta: { role: 'company' },
+    },
+    {
       path: '/offerte/nuova',
       name: 'jobs.create',
       component: () => import('@/views/PostJobView.vue'),

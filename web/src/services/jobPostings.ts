@@ -34,3 +34,12 @@ export async function createJobPosting(payload: JobPostingPayload) {
 export function deleteJobPosting(id: number) {
   return http<void>(`/job-postings/${id}`, { method: 'DELETE' })
 }
+
+export async function updateJobPosting(id: number, payload: JobPostingPayload) {
+  const { data } = await http<Resource<JobPosting>>(`/job-postings/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+
+  return data
+}
