@@ -3,6 +3,7 @@
 use App\Enums\ContractType;
 use App\Enums\WorkMode;
 use App\Models\JobPosting;
+use App\Models\Skill;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 
@@ -54,6 +55,21 @@ describe('listing', function () {
             ->assertJsonPath('data.1.company.id', $company->id);
     });
 
+    it('filters by skills, best matches first', function () {
+        [$vue, $php, $docker] = Skill::factory(3)->create();
+        $oneMatch = JobPosting::factory()->hasAttached($vue)->create(['published_at' => now()]);
+        $twoMatches = JobPosting::factory()->hasAttached([$vue, $php])->create(['published_at' => now()->subDay()]);
+        JobPosting::factory()->hasAttached($docker)->create();
+        JobPosting::factory()->create();
+
+        $this->getJson("/api/job-postings?skills[]={$vue->id}&skills[]={$php->id}")
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonPath('data.0.id', $twoMatches->id)
+            ->assertJsonPath('data.1.id', $oneMatch->id)
+            ->assertJsonCount(2, 'data.0.skills');
+    });
+
     it('rejects invalid filters', function () {
         $this->getJson('/api/job-postings?work_mode=99')
             ->assertUnprocessable()
@@ -83,6 +99,26 @@ describe('creation', function () {
             ->company_id->toBe($company->id)
             ->salary->toBe('42000.50')
             ->published_at->toEqual(now());
+    });
+
+    it('saves the required skills', function () {
+        Sanctum::actingAs(User::factory()->company()->create());
+        [$vue, $php] = Skill::factory(2)->sequence(['name' => 'Vue.js'], ['name' => 'PHP'])->create();
+
+        $this->postJson('/api/job-postings', JobPosting::factory()->raw([
+            'company_id' => null,
+            'skills' => [$vue->id, $php->id],
+        ]))
+            ->assertCreated()
+            ->assertJsonPath('data.skills.*.name', ['PHP', 'Vue.js']);
+    });
+
+    it('rejects unknown skills', function () {
+        Sanctum::actingAs(User::factory()->company()->create());
+
+        $this->postJson('/api/job-postings', JobPosting::factory()->raw(['company_id' => null, 'skills' => [999]]))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('skills.0');
     });
 
     it('validates the required fields with Italian messages', function () {

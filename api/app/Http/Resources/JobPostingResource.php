@@ -32,6 +32,7 @@ class JobPostingResource extends JsonResource
             'work_mode_label' => $this->work_mode?->label(),
             'contract_type' => $this->contract_type?->value,
             'contract_type_label' => $this->contract_type?->label(),
+            'skills' => SkillResource::collection($this->whenLoaded('skills')),
             'published_at' => $this->published_at?->toIso8601String(),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
