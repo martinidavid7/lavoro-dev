@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Enums\CompanySize;
+use App\Models\CompanyProfile;
 use App\Models\JobPosting;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -18,10 +20,20 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $demoCompany = User::factory()->company()->create([
-            'name' => 'Lavoro Demo S.r.l.',
-            'email' => 'azienda@example.com',
-        ]);
+        $demoCompany = User::factory()
+            ->company()
+            ->has(CompanyProfile::factory()->state([
+                'sector' => 'Software e SaaS',
+                'city' => 'Milano',
+                'size' => CompanySize::Small,
+                'website' => 'https://lavoro.dev',
+                'contact_email' => 'lavora-con-noi@example.com',
+                'phone' => '+39 02 1234 5678',
+            ]))
+            ->create([
+                'name' => 'Lavoro Demo S.r.l.',
+                'email' => 'azienda@example.com',
+            ]);
 
         User::factory()->candidate()->create([
             'name' => 'Giulia Rossi',
@@ -32,6 +44,7 @@ class DatabaseSeeder extends Seeder
 
         User::factory(5)
             ->company()
+            ->has(CompanyProfile::factory())
             ->has(JobPosting::factory(5), 'jobPostings')
             ->create();
     }

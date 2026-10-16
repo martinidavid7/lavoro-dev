@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -42,6 +43,16 @@ class User extends Authenticatable
     public function jobPostings(): HasMany
     {
         return $this->hasMany(JobPosting::class, 'company_id');
+    }
+
+    /**
+     * Public profile of a company (description, contacts, logo).
+     *
+     * @return HasOne<CompanyProfile, $this>
+     */
+    public function companyProfile(): HasOne
+    {
+        return $this->hasOne(CompanyProfile::class);
     }
 
     public function isCompany(): bool

@@ -31,7 +31,7 @@ class JobPostingController extends Controller
         ]);
 
         $jobPostings = JobPosting::query()
-            ->with('company')
+            ->with('company.companyProfile')
             ->applyFilters($filters)
             ->orderByDesc('published_at')
             ->paginate(10)
@@ -52,7 +52,7 @@ class JobPostingController extends Controller
             'published_at' => now(),
         ]);
 
-        return new JobPostingResource($jobPosting->load('company'));
+        return new JobPostingResource($jobPosting->load('company.companyProfile'));
     }
 
     /**
@@ -60,7 +60,7 @@ class JobPostingController extends Controller
      */
     public function show(JobPosting $jobPosting): JobPostingResource
     {
-        return new JobPostingResource($jobPosting->load('company'));
+        return new JobPostingResource($jobPosting->load('company.companyProfile'));
     }
 
     /**
@@ -72,7 +72,7 @@ class JobPostingController extends Controller
 
         $jobPosting->update($request->validated());
 
-        return new JobPostingResource($jobPosting->load('company'));
+        return new JobPostingResource($jobPosting->load('company.companyProfile'));
     }
 
     /**
