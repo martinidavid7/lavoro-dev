@@ -126,4 +126,51 @@ describe('JobApplicationsView', () => {
 
     expect(wrapper.text()).toContain('Puoi vedere solo i candidati delle tue offerte.')
   })
+
+  it('loads every status for the board even when the URL has a list filter', async () => {
+    const { wrapper } = await mountView({ vista: 'kanban', stato: 'colloquio' })
+    expect(listJobApplications).toHaveBeenLastCalledWith(42, undefined)
+    expect(wrapper.findAll('[data-test="board-status"]')).toHaveLength(2)
+    expect(wrapper.find('[data-test="status-tab"]').exists()).toBe(false)
+    await wrapper.get('input[type="search"]').setValue('Sara')
+    expect(wrapper.findAll('article')).toHaveLength(1)
+    expect(wrapper.find('article')!.text()).toContain('Sara')
+  })
+
+  it('moves immediately and restores the original column if the API rejects the move', async () => {
+    let rejectMove!: (error: Error) => void
+    vi.mocked(updateApplicationStatus).mockImplementation(
+      () =>
+        new Promise((_, reject) => {
+          rejectMove = reject
+        }),
+    )
+    const { wrapper } = await mountView({ vista: 'kanban' })
+    const columns = () => wrapper.findAll('section[aria-label]')
+    await wrapper.findAll('[data-test="board-status"]')[0]!.setValue('hired')
+    expect(columns()[3]!.text()).toContain('Marco')
+    expect(columns()[0]!.findAll('article')).toHaveLength(0)
+    rejectMove(new Error('Server unavailable'))
+    await flushPromises()
+    expect(columns()[0]!.text()).toContain('Marco')
+    expect(columns()[3]!.findAll('article')).toHaveLength(0)
+    expect(wrapper.findAll('[data-test="board-status"]')[0]!.attributes('disabled')).toBeUndefined()
+  })
+
+  it('supports dragging a candidate to another column', async () => {
+    vi.mocked(updateApplicationStatus).mockResolvedValue(applicationOf(1, 'Marco', 'interview'))
+    const { wrapper } = await mountView({ vista: 'kanban' })
+    const data: Record<string, string> = {}
+    const dataTransfer = {
+      effectAllowed: '',
+      setData: (key: string, value: string) => {
+        data[key] = value
+      },
+      getData: (key: string) => data[key],
+    }
+    await wrapper.findAll('article')[0]!.trigger('dragstart', { dataTransfer })
+    await wrapper.findAll('section[aria-label]')[1]!.trigger('drop', { dataTransfer })
+    await flushPromises()
+    expect(updateApplicationStatus).toHaveBeenCalledWith(1, 'interview')
+  })
 })
