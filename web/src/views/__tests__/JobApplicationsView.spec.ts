@@ -127,6 +127,13 @@ describe('JobApplicationsView', () => {
     expect(wrapper.text()).toContain('Puoi vedere solo i candidati delle tue offerte.')
   })
 
+  it('highlights the active view', async () => {
+    const { wrapper } = await mountView({ vista: 'kanban' })
+
+    expect(wrapper.get('[data-test="kanban-toggle"]').classes()).toContain('btn-primary')
+    expect(wrapper.get('button[aria-pressed="false"]').classes()).toContain('btn-secondary')
+  })
+
   it('loads every status for the board even when the URL has a list filter', async () => {
     const { wrapper } = await mountView({ vista: 'kanban', stato: 'colloquio' })
     expect(listJobApplications).toHaveBeenLastCalledWith(42, undefined)

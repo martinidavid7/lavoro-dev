@@ -167,7 +167,7 @@ async function downloadCv(application: Application) {
     <div class="flex flex-wrap gap-2" aria-label="Visualizzazione candidature">
       <button
         type="button"
-        class="btn-secondary"
+        :class="boardMode ? 'btn-secondary' : 'btn-primary'"
         :aria-pressed="!boardMode"
         :disabled="updating !== null"
         @click="router.replace({ query: { ...route.query, vista: undefined } })"
@@ -176,7 +176,7 @@ async function downloadCv(application: Application) {
       </button>
       <button
         type="button"
-        class="btn-secondary"
+        :class="boardMode ? 'btn-primary' : 'btn-secondary'"
         :aria-pressed="boardMode"
         :disabled="updating !== null"
         data-test="kanban-toggle"

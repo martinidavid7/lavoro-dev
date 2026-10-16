@@ -65,9 +65,17 @@ class DatabaseSeeder extends Seeder
             ->has(JobPosting::factory(5), 'jobPostings')
             ->create();
 
-        JobPosting::all()->each(fn (JobPosting $jobPosting) => $jobPosting->skills()->attach(
-            $this->skillsForRole($jobPosting->title, $skills)->pluck('id'),
-        ));
+        JobPosting::all()->each(function (JobPosting $jobPosting) use ($skills) {
+            $roleSkills = $this->skillsForRole($jobPosting->title, $skills);
+            $jobPosting->skills()->attach($roleSkills->pluck('id'));
+
+            // The factory writes a random stack in the description: use the real skills instead.
+            $jobPosting->update(['description' => preg_replace(
+                '/Stack: [^.]+\./',
+                'Stack: '.$roleSkills->pluck('name')->implode(', ').'.',
+                $jobPosting->description,
+            )]);
+        });
 
         $this->seedApplications($demoCompany->jobPostings()->first(), $demoCandidate, $skills);
     }
