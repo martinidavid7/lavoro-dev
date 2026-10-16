@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CandidateProfileController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompanyProfileController;
+use App\Http\Controllers\JobPostingApplicationController;
 use App\Http\Controllers\JobPostingController;
 use App\Http\Controllers\SkillController;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +32,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/candidate-profile/cv', [CandidateProfileController::class, 'storeCv']);
     Route::get('/candidate-profile/cv', [CandidateProfileController::class, 'downloadCv']);
     Route::delete('/candidate-profile/cv', [CandidateProfileController::class, 'destroyCv']);
+
+    Route::get('/job-postings/{jobPosting}/applications', [JobPostingApplicationController::class, 'index']);
+    Route::post('/job-postings/{jobPosting}/applications', [JobPostingApplicationController::class, 'store']);
+    Route::get('/applications', [ApplicationController::class, 'index']);
+    Route::patch('/applications/{application}', [ApplicationController::class, 'update']);
+    Route::delete('/applications/{application}', [ApplicationController::class, 'destroy']);
+    Route::get('/applications/{application}/cv', [ApplicationController::class, 'downloadCv']);
 
     Route::apiResource('job-postings', JobPostingController::class)->except(['index', 'show']);
 });

@@ -25,4 +25,20 @@ class JobPostingPolicy
     {
         return $user->id === $jobPosting->company_id;
     }
+
+    /**
+     * Only candidates apply.
+     */
+    public function apply(User $user, JobPosting $jobPosting): bool
+    {
+        return $user->isCandidate();
+    }
+
+    /**
+     * Only the company that published the job posting sees who applied.
+     */
+    public function viewApplications(User $user, JobPosting $jobPosting): bool
+    {
+        return $user->id === $jobPosting->company_id;
+    }
 }

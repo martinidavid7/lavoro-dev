@@ -76,6 +76,16 @@ class User extends Authenticatable
         return $this->belongsToMany(Skill::class)->orderBy('name');
     }
 
+    /**
+     * Applications sent by a candidate.
+     *
+     * @return HasMany<Application, $this>
+     */
+    public function applications(): HasMany
+    {
+        return $this->hasMany(Application::class, 'candidate_id');
+    }
+
     public function isCandidate(): bool
     {
         return $this->role === UserRole::Candidate;

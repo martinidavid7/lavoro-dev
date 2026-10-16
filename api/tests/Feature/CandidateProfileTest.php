@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\CandidateProfile;
+use App\Models\Application;
 use App\Models\Skill;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
@@ -177,10 +177,15 @@ it('lists the skills catalog alphabetically', function () {
 });
 
 it('seeds the demo data', function () {
+    Storage::fake('local');
+
     $this->seed();
 
-    expect(User::where('email', 'candidato@example.com')->sole())
+    $demoCandidate = User::where('email', 'candidato@example.com')->sole();
+    expect($demoCandidate)
         ->candidateProfile->not->toBeNull()
-        ->skills->not->toBeEmpty();
-    expect(CandidateProfile::count())->toBe(1);
+        ->skills->not->toBeEmpty()
+        ->applications->toHaveCount(1);
+    expect(Application::count())->toBe(8);
+    Storage::disk('local')->assertExists(Application::first()->cv_path);
 });

@@ -20,6 +20,13 @@ return [
         'Candidate' => 'Candidato',
     ],
 
+    'application_status' => [
+        'InReview' => 'In valutazione',
+        'Interview' => 'Colloquio',
+        'Rejected' => 'Non selezionato',
+        'Hired' => 'Assunto',
+    ],
+
     'company_size' => [
         'Micro' => '1-10 dipendenti',
         'Small' => '11-50 dipendenti',

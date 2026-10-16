@@ -139,6 +139,8 @@ return [
         'cv' => 'curriculum',
         'skills' => 'competenze',
         'skills.*' => 'competenza',
+        'cover_letter' => 'lettera di presentazione',
+        'status' => 'stato',
     ],
 
 ];
