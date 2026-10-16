@@ -4,6 +4,40 @@ Tech job board: a **full stack** application with a REST API in **Laravel** and 
 
 > Portfolio project, under active development. See the [roadmap](#roadmap).
 
+![Job list filtered by the candidate's skills, best matches first](docs/screenshots/skills-filter.png)
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/applicants-kanban.png" alt="Applicants Kanban board" />
+      <p align="center"><b>Applicants Kanban board</b><br />Drag and drop or keyboard menu, search and sorting</p>
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/job-editor.png" alt="Job posting editor with live preview" />
+      <p align="center"><b>Job posting editor</b><br />Skills picker and live preview</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/job-comparison.png" alt="Side-by-side comparison of three job postings" />
+      <p align="center"><b>Job comparison</b><br />Up to three job postings, highest salary and matching skills</p>
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/job-detail.png" alt="Job posting page with the candidate's matching skills" />
+      <p align="center"><b>Job posting page</b><br />Matching skills and one-click application</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/candidate-profile.png" alt="Candidate profile with completion bar" />
+      <p align="center"><b>Candidate profile</b><br />Photo, PDF CV, skills and links</p>
+    </td>
+    <td width="50%"></td>
+  </tr>
+</table>
+
 ## Features
 
 - Paginated job listing, with title search and filters by work mode and contract type
