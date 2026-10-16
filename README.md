@@ -25,7 +25,7 @@ Tech job board: a **full stack** application with a REST API in **Laravel** and 
 ## Structure
 
 ```
-vagas/
+lavoro-dev/
 ├── api/   REST API (Laravel)
 ├── web/   SPA (Vue 3 + TS)
 └── .github/workflows/ci.yml
