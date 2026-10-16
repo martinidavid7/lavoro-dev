@@ -1,5 +1,5 @@
-/** Formato de uma coleção paginada de API Resources do Laravel. */
-export interface Paginado<T> {
+/** Shape of a paginated Laravel API Resource collection. */
+export interface Paginated<T> {
   data: T[]
   meta: {
     current_page: number
@@ -11,9 +11,9 @@ export interface Paginado<T> {
   }
 }
 
-/** Formato de um API Resource individual do Laravel. */
-export interface Recurso<T> {
+/** Shape of a single Laravel API Resource. */
+export interface Resource<T> {
   data: T
 }
 
-export type ErrosValidacao = Record<string, string[]>
+export type ValidationErrors = Record<string, string[]>

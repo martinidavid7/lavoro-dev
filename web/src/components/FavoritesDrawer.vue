@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
-import { useFavoritasStore } from '@/stores/favoritas'
+import { useFavoritesStore } from '@/stores/favorites'
 
-const aberto = defineModel<boolean>('aberto', { required: true })
+const open = defineModel<boolean>('open', { required: true })
 
-const favoritas = useFavoritasStore()
+const favorites = useFavoritesStore()
 
-function fecharComEsc(evento: KeyboardEvent) {
-  if (evento.key === 'Escape') aberto.value = false
+function closeOnEscape(event: KeyboardEvent) {
+  if (event.key === 'Escape') open.value = false
 }
 
-onMounted(() => document.addEventListener('keydown', fecharComEsc))
-onBeforeUnmount(() => document.removeEventListener('keydown', fecharComEsc))
+onMounted(() => document.addEventListener('keydown', closeOnEscape))
+onBeforeUnmount(() => document.removeEventListener('keydown', closeOnEscape))
 </script>
 
 <template>
@@ -22,7 +22,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', fecharComEsc))
     enter-active-class="transition-opacity"
     leave-active-class="transition-opacity"
   >
-    <div v-if="aberto" class="fixed inset-0 z-40 bg-slate-900/30" @click="aberto = false" />
+    <div v-if="open" class="fixed inset-0 z-40 bg-slate-900/30" @click="open = false" />
   </Transition>
 
   <Transition
@@ -32,47 +32,47 @@ onBeforeUnmount(() => document.removeEventListener('keydown', fecharComEsc))
     leave-active-class="transition-transform duration-200"
   >
     <aside
-      v-if="aberto"
+      v-if="open"
       class="fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col bg-white shadow-xl"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="titulo-favoritas"
+      aria-labelledby="favorites-title"
     >
       <header class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-        <h2 id="titulo-favoritas" class="font-semibold text-slate-900">Vagas favoritas</h2>
+        <h2 id="favorites-title" class="font-semibold text-slate-900">Offerte preferite</h2>
         <button
           type="button"
           class="rounded-lg p-1 text-slate-500 hover:bg-slate-100"
-          aria-label="Fechar"
-          @click="aberto = false"
+          aria-label="Chiudi"
+          @click="open = false"
         >
           ✕
         </button>
       </header>
 
-      <p v-if="!favoritas.total" class="px-5 py-10 text-center text-sm text-slate-500">
-        Você ainda não favoritou nenhuma vaga.
+      <p v-if="!favorites.count" class="px-5 py-10 text-center text-sm text-slate-500">
+        Non hai ancora aggiunto offerte ai preferiti.
       </p>
 
       <ul v-else class="flex-1 divide-y divide-slate-100 overflow-y-auto">
         <li
-          v-for="vaga in favoritas.vagas"
-          :key="vaga.id"
+          v-for="job in favorites.items"
+          :key="job.id"
           class="flex items-center justify-between gap-3 px-5 py-3"
         >
           <RouterLink
-            :to="{ name: 'vagas.detalhe', params: { id: vaga.id } }"
+            :to="{ name: 'jobs.show', params: { id: job.id } }"
             class="text-sm font-medium text-slate-700 hover:text-indigo-600"
-            @click="aberto = false"
+            @click="open = false"
           >
-            {{ vaga.titulo }}
+            {{ job.title }}
           </RouterLink>
           <button
             type="button"
             class="text-xs text-slate-400 hover:text-red-600"
-            @click="favoritas.remover(vaga.id)"
+            @click="favorites.remove(job.id)"
           >
-            Remover
+            Rimuovi
           </button>
         </li>
       </ul>

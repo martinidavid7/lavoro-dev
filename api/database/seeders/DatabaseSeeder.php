@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\JobPosting;
 use App\Models\User;
-use App\Models\Vaga;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        Vaga::factory(30)->create();
+        JobPosting::factory(30)->create();
 
         User::factory()->create([
             'name' => 'Test User',

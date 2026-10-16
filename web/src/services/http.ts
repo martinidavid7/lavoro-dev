@@ -1,36 +1,36 @@
-import type { ErrosValidacao } from '@/types/api'
+import type { ValidationErrors } from '@/types/api'
 
 const BASE_URL = import.meta.env.VITE_API_URL
 
 export class ApiError extends Error {
   readonly status: number
-  readonly erros: ErrosValidacao
+  readonly errors: ValidationErrors
 
-  constructor(status: number, message: string, erros: ErrosValidacao = {}) {
+  constructor(status: number, message: string, errors: ValidationErrors = {}) {
     super(message)
     this.name = 'ApiError'
     this.status = status
-    this.erros = erros
+    this.errors = errors
   }
 
-  get ehValidacao() {
+  get isValidation() {
     return this.status === 422
   }
 
-  get naoEncontrado() {
+  get isNotFound() {
     return this.status === 404
   }
 }
 
 /**
- * Wrapper do fetch para a API: define os headers JSON, converte respostas
- * de erro em ApiError e trata o 204 (sem conteúdo).
+ * fetch wrapper for the API: sets the JSON headers, turns error responses
+ * into ApiError and handles 204 (No Content).
  */
-export async function http<T>(caminho: string, init: RequestInit = {}): Promise<T> {
-  let resposta: Response
+export async function http<T>(path: string, init: RequestInit = {}): Promise<T> {
+  let response: Response
 
   try {
-    resposta = await fetch(`${BASE_URL}${caminho}`, {
+    response = await fetch(`${BASE_URL}${path}`, {
       ...init,
       headers: {
         Accept: 'application/json',
@@ -39,13 +39,13 @@ export async function http<T>(caminho: string, init: RequestInit = {}): Promise<
       },
     })
   } catch {
-    throw new ApiError(0, 'Não foi possível conectar à API.')
+    throw new ApiError(0, 'Impossibile connettersi al server.')
   }
 
-  if (!resposta.ok) {
-    const corpo = await resposta.json().catch(() => ({}))
-    throw new ApiError(resposta.status, corpo.message ?? 'Erro inesperado.', corpo.errors)
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}))
+    throw new ApiError(response.status, body.message ?? 'Errore imprevisto.', body.errors)
   }
 
-  return resposta.status === 204 ? (undefined as T) : resposta.json()
+  return response.status === 204 ? (undefined as T) : response.json()
 }

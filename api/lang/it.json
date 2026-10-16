@@ -1,0 +1,9 @@
+{
+    "(and :count more error)": "(e :count altro errore)",
+    "(and :count more errors)": "(e altri :count errori)",
+    "Not Found": "Non trovato",
+    "Server Error": "Errore del server",
+    "Unauthorized": "Non autorizzato",
+    "Forbidden": "Accesso negato",
+    "Too Many Requests": "Troppe richieste"
+}

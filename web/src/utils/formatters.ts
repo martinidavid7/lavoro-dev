@@ -1,10 +1,18 @@
-const moeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
-const data = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+const currency = new Intl.NumberFormat('it-IT', {
+  style: 'currency',
+  currency: 'EUR',
+  maximumFractionDigits: 0,
+})
+const currencyWithCents = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' })
+const date = new Intl.DateTimeFormat('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' })
 
-export function formatarMoeda(valor: string | number) {
-  return moeda.format(Number(valor))
+/** Formats in euros, showing cents only when the amount has them. */
+export function formatCurrency(value: string | number) {
+  const amount = Number(value)
+
+  return (Number.isInteger(amount) ? currency : currencyWithCents).format(amount)
 }
 
-export function formatarData(iso: string) {
-  return data.format(new Date(iso))
+export function formatDate(iso: string) {
+  return date.format(new Date(iso))
 }

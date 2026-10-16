@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useNotificacoesStore } from '@/stores/notificacoes'
+import { useNotificationsStore } from '@/stores/notifications'
 
-const notificacoes = useNotificacoesStore()
+const notifications = useNotificationsStore()
 </script>
 
 <template>
@@ -16,22 +16,24 @@ const notificacoes = useNotificacoesStore()
       leave-active-class="transition duration-200"
     >
       <div
-        v-for="item in notificacoes.itens"
+        v-for="item in notifications.items"
         :key="item.id"
         class="pointer-events-auto rounded-lg border-l-4 bg-white p-4 shadow-lg"
-        :class="item.tipo === 'erro' ? 'border-red-500' : 'border-emerald-500'"
+        :class="item.type === 'error' ? 'border-red-500' : 'border-emerald-500'"
         role="status"
       >
         <div class="flex items-start justify-between gap-3">
           <div>
-            <p class="text-sm font-semibold text-slate-900">{{ item.titulo }}</p>
-            <p v-if="item.descricao" class="mt-1 text-sm text-slate-600">{{ item.descricao }}</p>
+            <p class="text-sm font-semibold text-slate-900">{{ item.title }}</p>
+            <p v-if="item.description" class="mt-1 text-sm text-slate-600">
+              {{ item.description }}
+            </p>
           </div>
           <button
             type="button"
             class="text-slate-400 hover:text-slate-600"
-            aria-label="Fechar notificação"
-            @click="notificacoes.remover(item.id)"
+            aria-label="Chiudi notifica"
+            @click="notifications.remove(item.id)"
           >
             ✕
           </button>

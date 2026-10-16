@@ -2,13 +2,13 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\Modalidade;
-use App\Enums\TipoContratacao;
+use App\Enums\ContractType;
+use App\Enums\WorkMode;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class StoreVagaRequest extends FormRequest
+class StoreJobPostingRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,11 +26,11 @@ class StoreVagaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'titulo' => ['required', 'string', 'max:255'],
-            'descricao' => ['required', 'string'],
-            'salario' => ['required', 'numeric', 'min:0', 'max:99999999.99', 'decimal:0,2'],
-            'modalidade' => ['required', Rule::enum(Modalidade::class)],
-            'tipo' => ['required', Rule::enum(TipoContratacao::class)],
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['required', 'string'],
+            'salary' => ['required', 'numeric', 'min:0', 'max:99999999.99', 'decimal:0,2'],
+            'work_mode' => ['required', Rule::enum(WorkMode::class)],
+            'contract_type' => ['required', Rule::enum(ContractType::class)],
         ];
     }
 }

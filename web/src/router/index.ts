@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 
+// Paths are user-facing, so they are in Italian; route names stay in English.
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -10,23 +11,23 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: '/vagas/nova',
-      name: 'vagas.nova',
-      component: () => import('@/views/PublicarVagaView.vue'),
+      path: '/offerte/nuova',
+      name: 'jobs.create',
+      component: () => import('@/views/PostJobView.vue'),
     },
     {
-      path: '/vagas/:id(\\d+)',
-      name: 'vagas.detalhe',
-      component: () => import('@/views/VagaDetalheView.vue'),
-      props: (rota) => ({ id: Number(rota.params.id) }),
+      path: '/offerte/:id(\\d+)',
+      name: 'jobs.show',
+      component: () => import('@/views/JobDetailView.vue'),
+      props: (route) => ({ id: Number(route.params.id) }),
     },
     {
-      path: '/:caminho(.*)*',
-      name: 'nao-encontrado',
-      component: () => import('@/views/NaoEncontradoView.vue'),
+      path: '/:path(.*)*',
+      name: 'not-found',
+      component: () => import('@/views/NotFoundView.vue'),
     },
   ],
-  scrollBehavior: (_to, _from, posicaoSalva) => posicaoSalva ?? { top: 0 },
+  scrollBehavior: (_to, _from, savedPosition) => savedPosition ?? { top: 0 },
 })
 
 export default router

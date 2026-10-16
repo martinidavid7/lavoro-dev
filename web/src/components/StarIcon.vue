@@ -1,11 +1,11 @@
 <script setup lang="ts">
-defineProps<{ preenchida?: boolean }>()
+defineProps<{ filled?: boolean }>()
 </script>
 
 <template>
   <svg
     viewBox="0 0 24 24"
-    :fill="preenchida ? 'currentColor' : 'none'"
+    :fill="filled ? 'currentColor' : 'none'"
     stroke="currentColor"
     stroke-width="2"
     stroke-linejoin="round"

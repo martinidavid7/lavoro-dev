@@ -1,38 +1,39 @@
-# vagas.dev
+# lavoro.dev
 
-Plataforma de vagas de emprego em tecnologia: aplicação **full stack** com API REST em **Laravel** e SPA em **Vue 3 + TypeScript**.
+Tech job board: a **full stack** application with a REST API in **Laravel** and an SPA in **Vue 3 + TypeScript**. The user interface is in Italian.
 
-> Projeto de portfólio, em evolução. Veja o [roadmap](#roadmap).
+> Portfolio project, under active development. See the [roadmap](#roadmap).
 
-## Funcionalidades
+## Features
 
-- Listagem de vagas paginada, com busca por título e filtros por modalidade e tipo de contratação
-- Filtros sincronizados com a URL: dá para compartilhar uma busca e usar o voltar do navegador
-- Página de detalhe da vaga
-- Publicação de vaga com validação no servidor e erros exibidos por campo
-- Vagas favoritas persistidas no navegador
-- Notificações de feedback, estados de carregamento, de lista vazia e de erro
+- Paginated job listing, with title search and filters by work mode and contract type
+- Filters synced with the URL: searches can be shared and the browser back button works
+- Job posting detail page
+- Job posting creation with server-side validation and per-field error messages
+- Favorite job postings persisted in the browser
+- Feedback notifications, plus loading, empty and error states
+- Italian UI: translated validation messages, euro amounts (gross annual salary, RAL) and Italian date format
 
 ## Stack
 
-| Camada | Tecnologias |
+| Layer | Technologies |
 | --- | --- |
-| **API** (`api/`) | PHP 8.4, Laravel 13, Sanctum, Eloquent API Resources, Form Requests, enums nativos, Pest |
+| **API** (`api/`) | PHP 8.4, Laravel 13, Sanctum, Eloquent API Resources, Form Requests, native enums, localization, Pest |
 | **Web** (`web/`) | Vue 3 (Composition API + `<script setup>`), TypeScript, Vite, Vue Router, Pinia, Tailwind CSS 4, Vitest |
-| **Qualidade** | GitHub Actions, Laravel Pint, ESLint + Oxlint, Prettier, vue-tsc |
+| **Quality** | GitHub Actions, Laravel Pint, ESLint + Oxlint, Prettier, vue-tsc |
 
-## Estrutura
+## Structure
 
 ```
 vagas/
-├── api/   API REST (Laravel)
+├── api/   REST API (Laravel)
 ├── web/   SPA (Vue 3 + TS)
 └── .github/workflows/ci.yml
 ```
 
-## Como rodar localmente
+## Running locally
 
-Pré-requisitos: PHP 8.3+, Composer e Node 22+.
+Requirements: PHP 8.3+, Composer and Node 22.18+ or 24.12+.
 
 **API** (http://localhost:8000):
 
@@ -41,7 +42,7 @@ cd api
 composer install
 cp .env.example .env
 php artisan key:generate
-php artisan migrate --seed   # SQLite, com 30 vagas de exemplo
+php artisan migrate --seed   # SQLite, with 30 sample job postings
 php artisan serve
 ```
 
@@ -54,7 +55,7 @@ cp .env.example .env         # VITE_API_URL=http://localhost:8000/api
 npm run dev
 ```
 
-## Testes
+## Tests
 
 ```bash
 cd api && php vendor/bin/pest
@@ -63,19 +64,26 @@ cd web && npx vitest run
 
 ## API
 
-| Método | Rota | Descrição |
+| Method | Route | Description |
 | --- | --- | --- |
-| `GET` | `/api/vagas` | Lista paginada. Filtros: `titulo`, `modalidade` (1 = Home Office, 2 = Presencial), `tipo` (1 = CLT, 2 = PJ), `page` |
-| `GET` | `/api/vagas/{id}` | Detalhe |
-| `POST` | `/api/vagas` | Cria uma vaga (`titulo`, `descricao`, `salario`, `modalidade`, `tipo`) |
-| `PATCH` | `/api/vagas/{id}` | Atualização parcial |
-| `DELETE` | `/api/vagas/{id}` | Exclui |
+| `GET` | `/api/job-postings` | Paginated list. Filters: `title`, `work_mode`, `contract_type`, `page` |
+| `GET` | `/api/job-postings/{id}` | Detail |
+| `POST` | `/api/job-postings` | Creates a job posting (`title`, `description`, `salary`, `work_mode`, `contract_type`) |
+| `PATCH` | `/api/job-postings/{id}` | Partial update |
+| `DELETE` | `/api/job-postings/{id}` | Deletes |
+
+Enum values:
+
+- `work_mode`: 1 = remote (*Da remoto*), 2 = on-site (*In sede*), 3 = hybrid (*Ibrido*)
+- `contract_type`: 1 = permanent (*Tempo indeterminato*), 2 = fixed-term (*Tempo determinato*), 3 = freelance (*Partita IVA*), 4 = internship (*Stage*)
+
+Responses include the translated labels (`work_mode_label`, `contract_type_label`), following the `APP_LOCALE` setting (`it` by default).
 
 ## Roadmap
 
-- [ ] Autenticação com Sanctum (login e cadastro)
-- [ ] Perfis de **empresa** (publica e gerencia as próprias vagas) e **candidato** (se candidata)
-- [ ] Candidaturas e acompanhamento de status
-- [ ] Edição de vagas no front
-- [ ] Documentação da API (OpenAPI)
-- [ ] Deploy (web + API) com link público
+- [ ] Authentication with Sanctum (login and sign-up)
+- [ ] **Company** profiles (publish and manage their own job postings) and **candidate** profiles (apply)
+- [ ] Applications and status tracking
+- [ ] Job posting editing in the web app
+- [ ] API documentation (OpenAPI)
+- [ ] Deployment (web + API) with a public link

@@ -1,18 +1,22 @@
 import { describe, expect, it } from 'vitest'
-import { formatarData, formatarMoeda } from '../formatters'
+import { formatCurrency, formatDate } from '../formatters'
 
-// Intl usa espaço não separável entre "R$" e o valor.
-const normalizar = (texto: string) => texto.replace(/\s/g, ' ')
+// Intl uses a non-breaking space between the amount and "€".
+const normalize = (text: string) => text.replace(/\s/g, ' ')
 
-describe('formatarMoeda', () => {
-  it('formata valores numéricos e strings decimais da API em reais', () => {
-    expect(normalizar(formatarMoeda(8500.5))).toBe('R$ 8.500,50')
-    expect(normalizar(formatarMoeda('12000.00'))).toBe('R$ 12.000,00')
+describe('formatCurrency', () => {
+  it('formats numbers and API decimal strings in euros', () => {
+    expect(normalize(formatCurrency(42000))).toBe('42.000 €')
+    expect(normalize(formatCurrency('35000.00'))).toBe('35.000 €')
+  })
+
+  it('shows cents only when the amount has them', () => {
+    expect(normalize(formatCurrency('42000.50'))).toBe('42.000,50 €')
   })
 })
 
-describe('formatarData', () => {
-  it('formata datas ISO no padrão brasileiro', () => {
-    expect(formatarData('2026-10-16T12:00:00-03:00')).toBe('16/10/2026')
+describe('formatDate', () => {
+  it('formats ISO dates in the Italian format', () => {
+    expect(formatDate('2026-10-16T12:00:00+02:00')).toBe('16/10/2026')
   })
 })
