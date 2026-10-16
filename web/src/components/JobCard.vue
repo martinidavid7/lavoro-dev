@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import { useFavoritesStore } from '@/stores/favorites'
 import type { JobPosting } from '@/types/jobPosting'
 import { formatCurrency, formatDate } from '@/utils/formatters'
@@ -9,6 +10,7 @@ import StarIcon from './StarIcon.vue'
 defineProps<{ job: JobPosting }>()
 defineEmits<{ delete: [job: JobPosting] }>()
 
+const auth = useAuthStore()
 const favorites = useFavoritesStore()
 </script>
 
@@ -18,14 +20,17 @@ const favorites = useFavoritesStore()
   >
     <div class="flex items-start justify-between gap-4">
       <div class="space-y-2">
-        <h3 class="text-lg font-semibold text-slate-900">
-          <RouterLink
-            :to="{ name: 'jobs.show', params: { id: job.id } }"
-            class="hover:text-indigo-600"
-          >
-            {{ job.title }}
-          </RouterLink>
-        </h3>
+        <div>
+          <h3 class="text-lg font-semibold text-slate-900">
+            <RouterLink
+              :to="{ name: 'jobs.show', params: { id: job.id } }"
+              class="hover:text-indigo-600"
+            >
+              {{ job.title }}
+            </RouterLink>
+          </h3>
+          <p class="text-sm text-slate-500" data-test="company">{{ job.company.name }}</p>
+        </div>
         <JobBadges :job="job" />
       </div>
 
@@ -63,7 +68,12 @@ const favorites = useFavoritesStore()
         <span>Pubblicata il {{ formatDate(job.published_at) }}</span>
       </div>
 
-      <button type="button" class="btn-danger px-3 py-1.5" @click="$emit('delete', job)">
+      <button
+        v-if="auth.canManage(job)"
+        type="button"
+        class="btn-danger px-3 py-1.5"
+        @click="$emit('delete', job)"
+      >
         Elimina
       </button>
     </footer>

@@ -5,6 +5,7 @@ import JobBadges from '@/components/JobBadges.vue'
 import StarIcon from '@/components/StarIcon.vue'
 import { ApiError } from '@/services/http'
 import { deleteJobPosting, getJobPosting } from '@/services/jobPostings'
+import { useAuthStore } from '@/stores/auth'
 import { useFavoritesStore } from '@/stores/favorites'
 import { useNotificationsStore } from '@/stores/notifications'
 import type { JobPosting } from '@/types/jobPosting'
@@ -13,6 +14,7 @@ import { formatCurrency, formatDate } from '@/utils/formatters'
 const props = defineProps<{ id: number }>()
 
 const router = useRouter()
+const auth = useAuthStore()
 const favorites = useFavoritesStore()
 const notifications = useNotificationsStore()
 
@@ -70,7 +72,10 @@ async function remove() {
     >
       <header class="flex flex-wrap items-start justify-between gap-4">
         <div class="space-y-3">
-          <h1 class="text-2xl font-bold tracking-tight text-slate-900">{{ job.title }}</h1>
+          <div>
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900">{{ job.title }}</h1>
+            <p class="mt-1 text-slate-500">{{ job.company.name }}</p>
+          </div>
           <JobBadges :job="job" />
         </div>
 
@@ -83,7 +88,9 @@ async function remove() {
             />
             {{ favorites.isFavorite(job.id) ? 'Nei preferiti' : 'Aggiungi ai preferiti' }}
           </button>
-          <button type="button" class="btn-danger" @click="remove">Elimina</button>
+          <button v-if="auth.canManage(job)" type="button" class="btn-danger" @click="remove">
+            Elimina
+          </button>
         </div>
       </header>
 

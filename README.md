@@ -10,6 +10,8 @@ Tech job board: a **full stack** application with a REST API in **Laravel** and 
 - Filters synced with the URL: searches can be shared and the browser back button works
 - Job posting detail page
 - Job posting creation with server-side validation and per-field error messages
+- Sign-up and login as a **company** or a **candidate**, with session cookie authentication (Sanctum SPA mode, CSRF protected)
+- Route guards by role: only companies publish job postings, and only the company that published one can delete it
 - Favorite job postings persisted in the browser
 - Feedback notifications, plus loading, empty and error states
 - Italian UI: translated validation messages, euro amounts (gross annual salary, RAL) and Italian date format
@@ -42,7 +44,7 @@ cd api
 composer install
 cp .env.example .env
 php artisan key:generate
-php artisan migrate --seed   # SQLite, with 30 sample job postings
+php artisan migrate --seed   # SQLite, with sample companies and job postings
 php artisan serve
 ```
 
@@ -54,6 +56,10 @@ npm install
 cp .env.example .env         # VITE_API_URL=http://localhost:8000/api
 npm run dev
 ```
+
+Demo logins (password `password`): `azienda@example.com` (company) and `candidato@example.com` (candidate).
+
+> Open the app at `http://localhost:5173`, not `127.0.0.1`: the session cookie is only sent when the web app and the API share the same host (`FRONTEND_URL` and `SANCTUM_STATEFUL_DOMAINS` in `api/.env`).
 
 ## Tests
 
@@ -68,9 +74,15 @@ cd web && npx vitest run
 | --- | --- | --- |
 | `GET` | `/api/job-postings` | Paginated list. Filters: `title`, `work_mode`, `contract_type`, `page` |
 | `GET` | `/api/job-postings/{id}` | Detail |
-| `POST` | `/api/job-postings` | Creates a job posting (`title`, `description`, `salary`, `work_mode`, `contract_type`) |
-| `PATCH` | `/api/job-postings/{id}` | Partial update |
-| `DELETE` | `/api/job-postings/{id}` | Deletes |
+| `POST` | `/api/job-postings` | Creates a job posting (`title`, `description`, `salary`, `work_mode`, `contract_type`). Companies only |
+| `PATCH` | `/api/job-postings/{id}` | Partial update. Owner only |
+| `DELETE` | `/api/job-postings/{id}` | Deletes. Owner only |
+| `POST` | `/api/register` | Creates an account and logs it in (`name`, `email`, `password`, `password_confirmation`, `role`: `company` or `candidate`) |
+| `POST` | `/api/login` | Logs in (`email`, `password`) |
+| `POST` | `/api/logout` | Logs out |
+| `GET` | `/api/user` | The logged in user |
+
+Authentication uses Sanctum's SPA mode: the web app first calls `GET /sanctum/csrf-cookie`, then sends the session cookie and the `X-XSRF-TOKEN` header. Without a session, protected routes answer `401`; a user without permission gets `403`.
 
 Enum values:
 
@@ -81,8 +93,9 @@ Responses include the translated labels (`work_mode_label`, `contract_type_label
 
 ## Roadmap
 
-- [ ] Authentication with Sanctum (login and sign-up)
-- [ ] **Company** profiles (publish and manage their own job postings) and **candidate** profiles (apply)
+- [x] Authentication with Sanctum (login and sign-up)
+- [x] **Company** and **candidate** roles; companies publish and manage their own job postings
+- [ ] Candidate profile and applying to job postings
 - [ ] Applications and status tracking
 - [ ] Job posting editing in the web app
 - [ ] API documentation (OpenAPI)

@@ -1,11 +1,28 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import { useFavoritesStore } from '@/stores/favorites'
+import { useNotificationsStore } from '@/stores/notifications'
 import StarIcon from './StarIcon.vue'
 
 defineEmits<{ openFavorites: [] }>()
 
+const route = useRoute()
+const router = useRouter()
+const auth = useAuthStore()
 const favorites = useFavoritesStore()
+const notifications = useNotificationsStore()
+
+async function logout() {
+  try {
+    await auth.logout()
+    notifications.success('Sei uscito dal tuo account')
+
+    if (route.meta.requiresAuth || route.meta.role) router.push({ name: 'home' })
+  } catch (e) {
+    notifications.error('Impossibile uscire', e instanceof Error ? e.message : undefined)
+  }
+}
 </script>
 
 <template>
@@ -24,6 +41,7 @@ const favorites = useFavoritesStore()
           Offerte
         </RouterLink>
         <RouterLink
+          v-if="auth.isCompany"
           :to="{ name: 'jobs.create' }"
           class="rounded-lg px-3 py-2 text-slate-600 hover:text-slate-900"
           exact-active-class="bg-slate-100 text-slate-900"
@@ -44,6 +62,30 @@ const favorites = useFavoritesStore()
             {{ favorites.count }}
           </span>
         </button>
+
+        <div
+          v-if="auth.user"
+          class="ml-2 flex items-center gap-3 border-l border-slate-200 pl-3"
+          data-test="user-menu"
+        >
+          <span class="hidden text-right leading-tight sm:block">
+            <span class="block text-slate-900">{{ auth.user.name }}</span>
+            <span class="block text-xs font-normal text-slate-500">{{ auth.user.role_label }}</span>
+          </span>
+          <button type="button" class="btn-secondary px-3 py-1.5" @click="logout">Esci</button>
+        </div>
+
+        <div v-else class="ml-2 flex items-center gap-2 border-l border-slate-200 pl-3">
+          <RouterLink
+            :to="{ name: 'login' }"
+            class="rounded-lg px-3 py-2 text-slate-600 hover:text-slate-900"
+          >
+            Accedi
+          </RouterLink>
+          <RouterLink :to="{ name: 'register' }" class="btn-primary px-3 py-1.5">
+            Registrati
+          </RouterLink>
+        </div>
       </nav>
     </div>
   </header>

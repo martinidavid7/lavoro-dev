@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import HomeView from '@/views/HomeView.vue'
+import { resolveAccess } from './guards'
 
 // Paths are user-facing, so they are in Italian; route names stay in English.
 const router = createRouter({
@@ -11,9 +13,22 @@ const router = createRouter({
       component: HomeView,
     },
     {
+      path: '/accedi',
+      name: 'login',
+      component: () => import('@/views/LoginView.vue'),
+      meta: { guestOnly: true },
+    },
+    {
+      path: '/registrati',
+      name: 'register',
+      component: () => import('@/views/RegisterView.vue'),
+      meta: { guestOnly: true },
+    },
+    {
       path: '/offerte/nuova',
       name: 'jobs.create',
       component: () => import('@/views/PostJobView.vue'),
+      meta: { role: 'company' },
     },
     {
       path: '/offerte/:id(\\d+)',
@@ -28,6 +43,17 @@ const router = createRouter({
     },
   ],
   scrollBehavior: (_to, _from, savedPosition) => savedPosition ?? { top: 0 },
+})
+
+router.beforeEach(async (to) => {
+  const auth = useAuthStore()
+
+  await auth.ensureLoaded()
+
+  return resolveAccess(to, {
+    isAuthenticated: auth.isAuthenticated,
+    role: auth.user?.role ?? null,
+  })
 })
 
 export default router

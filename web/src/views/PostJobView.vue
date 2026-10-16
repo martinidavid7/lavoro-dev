@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import FormField from '@/components/FormField.vue'
-import { ApiError } from '@/services/http'
+import { useApiForm } from '@/composables/useApiForm'
 import { createJobPosting } from '@/services/jobPostings'
 import { useNotificationsStore } from '@/stores/notifications'
-import type { ValidationErrors } from '@/types/api'
 import { CONTRACT_TYPES, WORK_MODES, type ContractType, type WorkMode } from '@/types/jobPosting'
 
 const router = useRouter()
@@ -19,32 +18,16 @@ const form = reactive({
   contract_type: null as ContractType | null,
 })
 
-const errors = ref<ValidationErrors>({})
-const submitting = ref(false)
+const { errors, submitting, submit } = useApiForm("Impossibile pubblicare l'offerta")
 
 async function publish() {
-  submitting.value = true
-  errors.value = {}
+  // The real validation lives in the API; null fields come back as a 422 error.
+  const job = await submit(() => createJobPosting(form as Parameters<typeof createJobPosting>[0]))
 
-  try {
-    // The real validation lives in the API; null fields come back as a 422 error.
-    const job = await createJobPosting(form as Parameters<typeof createJobPosting>[0])
+  if (!job) return
 
-    notifications.success('Offerta pubblicata!', `"${job.title}" è ora visibile sulla piattaforma.`)
-    router.push({ name: 'jobs.show', params: { id: job.id } })
-  } catch (e) {
-    if (e instanceof ApiError && e.isValidation) {
-      errors.value = e.errors
-      notifications.error('Controlla i campi evidenziati')
-    } else {
-      notifications.error(
-        "Impossibile pubblicare l'offerta",
-        e instanceof Error ? e.message : undefined,
-      )
-    }
-  } finally {
-    submitting.value = false
-  }
+  notifications.success('Offerta pubblicata!', `"${job.title}" è ora visibile sulla piattaforma.`)
+  router.push({ name: 'jobs.show', params: { id: job.id } })
 }
 </script>
 
