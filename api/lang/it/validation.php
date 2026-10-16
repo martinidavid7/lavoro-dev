@@ -122,6 +122,13 @@ return [
         'email' => 'email',
         'password' => 'password',
         'role' => 'tipo di account',
+        'sector' => 'settore',
+        'city' => 'città',
+        'size' => 'dimensione',
+        'website' => 'sito web',
+        'contact_email' => 'email di contatto',
+        'phone' => 'telefono',
+        'logo' => 'logo',
     ],
 
 ];

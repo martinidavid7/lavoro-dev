@@ -62,7 +62,10 @@ async function send<T>(path: string, init: RequestInit): Promise<T> {
       credentials: 'include',
       headers: {
         Accept: 'application/json',
-        ...(init.body ? { 'Content-Type': 'application/json' } : {}),
+        // FormData (file uploads) needs the multipart boundary the browser generates.
+        ...(init.body && !(init.body instanceof FormData)
+          ? { 'Content-Type': 'application/json' }
+          : {}),
         ...(xsrfToken ? { 'X-XSRF-TOKEN': xsrfToken } : {}),
         ...init.headers,
       },

@@ -20,4 +20,12 @@ return [
         'Candidate' => 'Candidate',
     ],
 
+    'company_size' => [
+        'Micro' => '1-10 employees',
+        'Small' => '11-50 employees',
+        'Medium' => '51-200 employees',
+        'Large' => '201-500 employees',
+        'Enterprise' => 'Over 500 employees',
+    ],
+
 ];

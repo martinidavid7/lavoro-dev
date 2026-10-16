@@ -23,6 +23,7 @@ class JobPostingResource extends JsonResource
             'company' => $this->whenLoaded('company', fn () => [
                 'id' => $this->company->id,
                 'name' => $this->company->name,
+                'logo_url' => $this->company->companyProfile?->logoUrl(),
             ]),
             'title' => $this->title,
             'description' => $this->description,

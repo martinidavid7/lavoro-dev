@@ -81,10 +81,23 @@ async function logout() {
           class="ml-2 flex items-center gap-3 border-l border-slate-200 pl-3"
           data-test="user-menu"
         >
-          <span class="hidden text-right leading-tight sm:block">
+          <component
+            :is="auth.isCompany ? RouterLink : 'span'"
+            v-bind="
+              auth.isCompany
+                ? {
+                    to: { name: 'company.show', params: { id: auth.user.id } },
+                    title: 'La mia azienda',
+                  }
+                : {}
+            "
+            class="hidden text-right leading-tight sm:block"
+            :class="{ 'rounded-lg px-2 py-1 hover:bg-slate-100': auth.isCompany }"
+            data-test="user-name"
+          >
             <span class="block text-slate-900">{{ auth.user.name }}</span>
             <span class="block text-xs font-normal text-slate-500">{{ auth.user.role_label }}</span>
-          </span>
+          </component>
           <button type="button" class="btn-secondary px-3 py-1.5" @click="logout">Esci</button>
         </div>
 

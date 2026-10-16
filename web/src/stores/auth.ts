@@ -48,7 +48,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /** Only the company that published a job posting can delete or edit it. */
-  function canManage(job: Pick<JobPosting, 'company'>) {
+  function canManage(job: { company: Pick<JobPosting['company'], 'id'> }) {
     return user.value?.id === job.company.id
   }
 

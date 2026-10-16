@@ -61,11 +61,11 @@ describe('auth store', () => {
   it('only lets the company that published a job posting manage it', () => {
     const auth = useAuthStore()
 
-    expect(auth.canManage({ company: { id: 7, name: 'Acme' } })).toBe(false)
+    expect(auth.canManage({ company: { id: 7 } })).toBe(false)
 
     auth.user = company
 
-    expect(auth.canManage({ company: { id: 7, name: 'Acme' } })).toBe(true)
-    expect(auth.canManage({ company: { id: 8, name: 'Altra' } })).toBe(false)
+    expect(auth.canManage({ company: { id: 7 } })).toBe(true)
+    expect(auth.canManage({ company: { id: 8 } })).toBe(false)
   })
 })
