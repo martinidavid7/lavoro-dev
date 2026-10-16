@@ -10,11 +10,14 @@ Tech job board: a **full stack** application with a REST API in **Laravel** and 
 - Filters synced with the URL: searches can be shared and the browser back button works
 - Job posting detail page
 - Job posting creation with server-side validation and per-field error messages
+- Shared job posting editor for creation and updates, with a live preview; only the owner company can edit
+- Comparison of up to three job postings, with highlighted differences, salary comparison and matching skills
 - Sign-up and login as a **company** or a **candidate**, with session cookie authentication (Sanctum SPA mode, CSRF protected)
 - Route guards by role: only companies publish job postings, and only the company that published one can delete it
 - Public company pages (description, sector, city, size, contacts, logo and job postings), edited by the company itself, with logo upload
 - Candidate profile: contacts, professional profile, links, photo and PDF CV (stored privately, downloaded through the API)
 - Applications: candidates apply with their CV and an optional cover letter, and follow the status in "Le mie candidature"; companies see the applicants of each job posting (profile, matching skills, cover letter, CV) and move them through *In valutazione*, *Colloquio*, *Non selezionato* and *Assunto*
+- Applicant Kanban board alongside the list view, with drag and drop, keyboard-accessible status menus, name search and sorting by date, name or matching skills; failed moves restore the original state
 - Skills from a shared catalog, picked with a searchable multi-select: companies tag their job postings, candidates list their own and filter the job postings that match them, best matches first
 - Favorite job postings saved in the candidate's account (guests are asked to log in, companies have none)
 - Feedback notifications, plus loading, empty and error states
@@ -117,7 +120,7 @@ Responses include the translated labels (`work_mode_label`, `contract_type_label
 - [x] Candidate profile with photo, CV and skills; job postings filtered by skills
 - [x] Company page: company details, contacts, logo and published job postings
 - [x] Applications, with the applicants of each job posting and their status (interview, rejected, hired)
-- [ ] Applications and status tracking
-- [ ] Job posting editing in the web app
+- [x] Job posting editing in the web app, with a live preview
+- [x] Job comparison and applicant Kanban board
 - [ ] API documentation (OpenAPI)
 - [ ] Deployment (web + API) with a public link
