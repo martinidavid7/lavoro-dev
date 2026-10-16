@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import JobCard from '@/components/JobCard.vue'
 import JobFilters from '@/components/JobFilters.vue'
 import ListPagination from '@/components/ListPagination.vue'
 import { deleteJobPosting, listJobPostings } from '@/services/jobPostings'
+import { useAuthStore } from '@/stores/auth'
 import { useFavoritesStore } from '@/stores/favorites'
 import { useNotificationsStore } from '@/stores/notifications'
 import type { Paginated } from '@/types/api'
@@ -13,6 +14,7 @@ import { filtersFromQuery, filtersToQuery } from '@/utils/filters'
 
 const route = useRoute()
 const router = useRouter()
+const auth = useAuthStore()
 const favorites = useFavoritesStore()
 const notifications = useNotificationsStore()
 
@@ -22,6 +24,15 @@ const error = ref<string | null>(null)
 
 // Filters live in the URL, so a search can be shared and the back button works.
 const filters = computed(() => filtersFromQuery(route.query))
+
+/** "Le mie offerte": the logged in company looking at its own job postings. */
+const isOwnListing = computed(
+  () => filters.value.company !== undefined && filters.value.company === auth.user?.id,
+)
+
+const companyName = computed(() =>
+  isOwnListing.value ? auth.user?.name : result.value?.data[0]?.company.name,
+)
 
 async function load() {
   loading.value = true
@@ -38,8 +49,13 @@ async function load() {
 
 watch(filters, load, { immediate: true })
 
+// The search form does not hold the company filter, so it is kept from the URL.
 function search(newFilters: JobPostingFilters) {
-  router.push({ query: filtersToQuery({ ...newFilters, page: 1 }) })
+  router.push({ query: filtersToQuery({ ...newFilters, company: filters.value.company, page: 1 }) })
+}
+
+function clearCompany() {
+  router.push({ query: filtersToQuery({ ...filters.value, company: undefined, page: 1 }) })
 }
 
 function changePage(page: number) {
@@ -65,7 +81,15 @@ async function remove(job: JobPosting) {
 
 <template>
   <div class="space-y-6">
-    <section>
+    <section v-if="isOwnListing" class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Le mie offerte</h1>
+        <p class="mt-1 text-slate-600">Le offerte pubblicate da {{ auth.user?.name }}.</p>
+      </div>
+      <RouterLink :to="{ name: 'jobs.create' }" class="btn-primary">Pubblica un'offerta</RouterLink>
+    </section>
+
+    <section v-else>
       <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
         Trova il tuo prossimo lavoro
       </h1>
@@ -73,6 +97,27 @@ async function remove(job: JobPosting) {
     </section>
 
     <JobFilters :filters="filters" @search="search" />
+
+    <div
+      v-if="filters.company && !isOwnListing"
+      class="flex items-center gap-2 text-sm text-slate-600"
+      data-test="company-filter"
+    >
+      Offerte di
+      <span
+        class="inline-flex items-center gap-1 rounded-full bg-indigo-50 py-1 pr-1 pl-3 font-medium text-indigo-700"
+      >
+        {{ companyName ?? 'questa azienda' }}
+        <button
+          type="button"
+          class="grid size-5 place-items-center rounded-full hover:bg-indigo-100"
+          aria-label="Mostra le offerte di tutte le aziende"
+          @click="clearCompany"
+        >
+          ×
+        </button>
+      </span>
+    </div>
 
     <div v-if="error" class="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
       <p class="font-medium text-red-700">{{ error }}</p>
@@ -91,6 +136,16 @@ async function remove(job: JobPosting) {
         :class="{ 'opacity-50': loading }"
       >
         <JobCard v-for="job in result.data" :key="job.id" :job="job" @delete="remove" />
+      </div>
+
+      <div
+        v-else-if="isOwnListing && !filters.title && !filters.work_mode && !filters.contract_type"
+        class="rounded-xl border border-dashed border-slate-300 p-10 text-center text-slate-500"
+      >
+        <p>Non hai ancora pubblicato offerte.</p>
+        <RouterLink :to="{ name: 'jobs.create' }" class="btn-primary mt-4">
+          Pubblica la prima offerta
+        </RouterLink>
       </div>
 
       <div

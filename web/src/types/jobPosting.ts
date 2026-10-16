@@ -17,6 +17,7 @@ export const CONTRACT_TYPES: { value: ContractType; label: string }[] = [
 
 export interface JobPosting {
   id: number
+  company: { id: number; name: string }
   title: string
   description: string
   salary: string
@@ -41,5 +42,7 @@ export interface JobPostingFilters {
   title?: string
   work_mode?: WorkMode
   contract_type?: ContractType
+  /** Id of the company that published the job postings. */
+  company?: number
   page?: number
 }

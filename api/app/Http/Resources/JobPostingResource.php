@@ -20,6 +20,10 @@ class JobPostingResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'company' => $this->whenLoaded('company', fn () => [
+                'id' => $this->company->id,
+                'name' => $this->company->name,
+            ]),
             'title' => $this->title,
             'description' => $this->description,
             'salary' => $this->salary,

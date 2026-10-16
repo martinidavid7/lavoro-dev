@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Enums\ContractType;
 use App\Enums\WorkMode;
 use App\Models\JobPosting;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -40,6 +41,7 @@ class JobPostingFactory extends Factory
         ));
 
         return [
+            'company_id' => User::factory()->company(),
             'title' => "{$role} {$level}",
             'description' => "Cerchiamo una persona {$level} da inserire nel nostro team di prodotto.\n\n"
                 ."Stack: {$stack}.\n\n"

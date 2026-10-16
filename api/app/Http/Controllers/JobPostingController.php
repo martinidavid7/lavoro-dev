@@ -11,6 +11,7 @@ use App\Models\JobPosting;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 class JobPostingController extends Controller
@@ -18,7 +19,7 @@ class JobPostingController extends Controller
     /**
      * GET /api/job-postings — paginated list, newest first.
      *
-     * Optional query string filters: ?title=dev&work_mode=1&contract_type=2
+     * Optional query string filters: ?title=dev&work_mode=1&contract_type=2&company=5
      */
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -26,9 +27,11 @@ class JobPostingController extends Controller
             'title' => ['nullable', 'string', 'max:100'],
             'work_mode' => ['nullable', Rule::enum(WorkMode::class)],
             'contract_type' => ['nullable', Rule::enum(ContractType::class)],
+            'company' => ['nullable', 'integer', 'min:1'],
         ]);
 
         $jobPostings = JobPosting::query()
+            ->with('company')
             ->applyFilters($filters)
             ->orderByDesc('published_at')
             ->paginate(10)
@@ -38,16 +41,18 @@ class JobPostingController extends Controller
     }
 
     /**
-     * POST /api/job-postings
+     * POST /api/job-postings — only companies; the job posting belongs to the logged in company.
      */
     public function store(StoreJobPostingRequest $request): JobPostingResource
     {
-        $jobPosting = JobPosting::create([
+        Gate::authorize('create', JobPosting::class);
+
+        $jobPosting = $request->user()->jobPostings()->create([
             ...$request->validated(),
             'published_at' => now(),
         ]);
 
-        return new JobPostingResource($jobPosting);
+        return new JobPostingResource($jobPosting->load('company'));
     }
 
     /**
@@ -55,24 +60,28 @@ class JobPostingController extends Controller
      */
     public function show(JobPosting $jobPosting): JobPostingResource
     {
-        return new JobPostingResource($jobPosting);
+        return new JobPostingResource($jobPosting->load('company'));
     }
 
     /**
-     * PUT/PATCH /api/job-postings/{jobPosting}
+     * PUT/PATCH /api/job-postings/{jobPosting} — only the company that published it.
      */
     public function update(UpdateJobPostingRequest $request, JobPosting $jobPosting): JobPostingResource
     {
+        Gate::authorize('update', $jobPosting);
+
         $jobPosting->update($request->validated());
 
-        return new JobPostingResource($jobPosting);
+        return new JobPostingResource($jobPosting->load('company'));
     }
 
     /**
-     * DELETE /api/job-postings/{jobPosting}
+     * DELETE /api/job-postings/{jobPosting} — only the company that published it.
      */
     public function destroy(JobPosting $jobPosting): Response
     {
+        Gate::authorize('delete', $jobPosting);
+
         $jobPosting->delete();
 
         return response()->noContent();

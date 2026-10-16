@@ -1,12 +1,15 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mount, RouterLinkStub } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
+import { useAuthStore } from '@/stores/auth'
 import { useFavoritesStore } from '@/stores/favorites'
 import type { JobPosting } from '@/types/jobPosting'
+import type { User } from '@/types/user'
 import JobCard from '../JobCard.vue'
 
 const job: JobPosting = {
   id: 42,
+  company: { id: 7, name: 'Acme S.r.l.' },
   title: 'Sviluppatore Vue Mid',
   description: 'Lavorare con Vue 3 e TypeScript.',
   salary: '42000.00',
@@ -18,6 +21,14 @@ const job: JobPosting = {
   created_at: '2026-10-16T12:00:00+02:00',
   updated_at: '2026-10-16T12:00:00+02:00',
 }
+
+const company = (id: number): User => ({
+  id,
+  name: 'Azienda',
+  email: `azienda${id}@example.com`,
+  role: 'company',
+  role_label: 'Azienda',
+})
 
 function mountCard() {
   return mount(JobCard, {
@@ -36,6 +47,7 @@ describe('JobCard', () => {
     const wrapper = mountCard()
 
     expect(wrapper.text()).toContain('Sviluppatore Vue Mid')
+    expect(wrapper.get('[data-test="company"]').text()).toBe('Acme S.r.l.')
     expect(wrapper.text()).toContain('Ibrido')
     expect(wrapper.text()).toContain('Tempo indeterminato')
     expect(wrapper.text()).toContain('16/10/2026')
@@ -52,7 +64,16 @@ describe('JobCard', () => {
     expect(button.attributes('aria-pressed')).toBe('true')
   })
 
-  it('emits delete with the job posting', async () => {
+  it('hides the delete button from guests and other companies', () => {
+    expect(mountCard().find('button.btn-danger').exists()).toBe(false)
+
+    useAuthStore().user = company(99)
+
+    expect(mountCard().find('button.btn-danger').exists()).toBe(false)
+  })
+
+  it('lets the owner delete it', async () => {
+    useAuthStore().user = company(7)
     const wrapper = mountCard()
 
     await wrapper.get('button.btn-danger').trigger('click')

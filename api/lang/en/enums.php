@@ -15,4 +15,9 @@ return [
         'Internship' => 'Internship',
     ],
 
+    'user_role' => [
+        'Company' => 'Company',
+        'Candidate' => 'Candidate',
+    ],
+
 ];
