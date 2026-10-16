@@ -121,6 +121,7 @@ return [
         'name' => 'nome',
         'email' => 'email',
         'password' => 'password',
+        'role' => 'tipo di account',
     ],
 
 ];

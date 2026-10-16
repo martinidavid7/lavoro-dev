@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable(['title', 'description', 'salary', 'published_at', 'work_mode', 'contract_type'])]
 class JobPosting extends Model
@@ -24,6 +25,16 @@ class JobPosting extends Model
             'work_mode' => WorkMode::class,
             'contract_type' => ContractType::class,
         ];
+    }
+
+    /**
+     * The company (a user with the company role) that published the job posting.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'company_id');
     }
 
     /**

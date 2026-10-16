@@ -3,11 +3,13 @@
 use App\Enums\ContractType;
 use App\Enums\WorkMode;
 use App\Models\JobPosting;
+use App\Models\User;
+use Laravel\Sanctum\Sanctum;
 
 beforeEach(fn () => app()->setLocale('it'));
 
 describe('listing', function () {
-    it('lists job postings paginated, newest first', function () {
+    it('lists job postings paginated, newest first, with their company', function () {
         $older = JobPosting::factory()->create(['published_at' => now()->subDays(5)]);
         $newer = JobPosting::factory()->create(['published_at' => now()]);
 
@@ -16,6 +18,7 @@ describe('listing', function () {
             ->assertJsonCount(2, 'data')
             ->assertJsonPath('data.0.id', $newer->id)
             ->assertJsonPath('data.1.id', $older->id)
+            ->assertJsonPath('data.0.company.name', $newer->company->name)
             ->assertJsonStructure(['data', 'links', 'meta' => ['current_page', 'last_page', 'total']]);
     });
 
@@ -47,8 +50,9 @@ describe('listing', function () {
 });
 
 describe('creation', function () {
-    it('creates a job posting with the publication date set by the server', function () {
+    it('creates a job posting owned by the logged in company, published by the server', function () {
         $this->freezeSecond();
+        $company = Sanctum::actingAs(User::factory()->company()->create());
 
         $this->postJson('/api/job-postings', [
             'title' => 'Sviluppatore Laravel',
@@ -59,15 +63,19 @@ describe('creation', function () {
         ])
             ->assertCreated()
             ->assertJsonPath('data.title', 'Sviluppatore Laravel')
+            ->assertJsonPath('data.company.id', $company->id)
             ->assertJsonPath('data.work_mode_label', 'Ibrido')
             ->assertJsonPath('data.contract_type_label', 'Tempo indeterminato');
 
         expect(JobPosting::sole())
+            ->company_id->toBe($company->id)
             ->salary->toBe('42000.50')
             ->published_at->toEqual(now());
     });
 
     it('validates the required fields with Italian messages', function () {
+        Sanctum::actingAs(User::factory()->company()->create());
+
         $this->postJson('/api/job-postings', [])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['title', 'description', 'salary', 'work_mode', 'contract_type'])
@@ -75,10 +83,24 @@ describe('creation', function () {
     });
 
     it('rejects a negative salary or one with more than two decimal places', function (mixed $salary) {
+        Sanctum::actingAs(User::factory()->company()->create());
+
         $this->postJson('/api/job-postings', JobPosting::factory()->raw(['salary' => $salary]))
             ->assertUnprocessable()
             ->assertJsonValidationErrors('salary');
     })->with([-1, 10.555]);
+
+    it('requires authentication', function () {
+        $this->postJson('/api/job-postings', JobPosting::factory()->raw())->assertUnauthorized();
+    });
+
+    it('does not let candidates publish', function () {
+        Sanctum::actingAs(User::factory()->candidate()->create());
+
+        $this->postJson('/api/job-postings', JobPosting::factory()->raw())->assertForbidden();
+
+        expect(JobPosting::count())->toBe(0);
+    });
 });
 
 describe('show, update and delete', function () {
@@ -87,15 +109,17 @@ describe('show, update and delete', function () {
 
         $this->getJson("/api/job-postings/{$jobPosting->id}")
             ->assertOk()
-            ->assertJsonPath('data.id', $jobPosting->id);
+            ->assertJsonPath('data.id', $jobPosting->id)
+            ->assertJsonPath('data.company.id', $jobPosting->company_id);
     });
 
     it('returns 404 for a missing job posting', function () {
         $this->getJson('/api/job-postings/999')->assertNotFound();
     });
 
-    it('partially updates a job posting', function () {
+    it('lets the owner partially update a job posting', function () {
         $jobPosting = JobPosting::factory()->create(['title' => 'Vecchio']);
+        Sanctum::actingAs($jobPosting->company);
 
         $this->patchJson("/api/job-postings/{$jobPosting->id}", ['title' => 'Nuovo titolo'])
             ->assertOk()
@@ -103,11 +127,29 @@ describe('show, update and delete', function () {
             ->assertJsonPath('data.description', $jobPosting->description);
     });
 
-    it('deletes a job posting', function () {
+    it('lets the owner delete a job posting', function () {
         $jobPosting = JobPosting::factory()->create();
+        Sanctum::actingAs($jobPosting->company);
 
         $this->deleteJson("/api/job-postings/{$jobPosting->id}")->assertNoContent();
 
         $this->assertModelMissing($jobPosting);
+    });
+
+    it('does not let another company change or delete it', function () {
+        $jobPosting = JobPosting::factory()->create(['title' => 'Originale']);
+        Sanctum::actingAs(User::factory()->company()->create());
+
+        $this->patchJson("/api/job-postings/{$jobPosting->id}", ['title' => 'Modificato'])->assertForbidden();
+        $this->deleteJson("/api/job-postings/{$jobPosting->id}")->assertForbidden();
+
+        expect($jobPosting->fresh()->title)->toBe('Originale');
+    });
+
+    it('requires authentication to change or delete', function () {
+        $jobPosting = JobPosting::factory()->create();
+
+        $this->patchJson("/api/job-postings/{$jobPosting->id}", ['title' => 'Modificato'])->assertUnauthorized();
+        $this->deleteJson("/api/job-postings/{$jobPosting->id}")->assertUnauthorized();
     });
 });
