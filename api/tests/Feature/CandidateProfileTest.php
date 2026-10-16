@@ -195,7 +195,9 @@ it('seeds the demo data', function () {
     JobPosting::where('title', 'like', 'Sviluppatore Front-end Vue.js%')->with('skills')->get()
         ->each(fn (JobPosting $job) => expect($job->skills->pluck('name')->diff($frontEndSkills))->toBeEmpty());
     expect(JobPosting::doesntHave('skills')->count())->toBe(0);
-    JobPosting::with('skills')->get()->each(
-        fn (JobPosting $job) => expect($job->description)->toContain(...$job->skills->pluck('name')),
-    );
+    JobPosting::with('skills')->get()->each(function (JobPosting $job) {
+        preg_match('/^Stack: (.*)\.$/m', $job->description, $stack);
+
+        expect(explode(', ', $stack[1]))->toEqualCanonicalizing($job->skills->pluck('name')->all());
+    });
 });

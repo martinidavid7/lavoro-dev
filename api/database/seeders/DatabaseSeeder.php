@@ -70,8 +70,9 @@ class DatabaseSeeder extends Seeder
             $jobPosting->skills()->attach($roleSkills->pluck('id'));
 
             // The factory writes a random stack in the description: use the real skills instead.
+            // The whole line: skill names contain dots too ("Vue.js").
             $jobPosting->update(['description' => preg_replace(
-                '/Stack: [^.]+\./',
+                '/^Stack: .*$/m',
                 'Stack: '.$roleSkills->pluck('name')->implode(', ').'.',
                 $jobPosting->description,
             )]);
