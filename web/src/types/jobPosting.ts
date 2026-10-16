@@ -17,7 +17,7 @@ export const CONTRACT_TYPES: { value: ContractType; label: string }[] = [
 
 export interface JobPosting {
   id: number
-  company: { id: number; name: string }
+  company: { id: number; name: string; logo_url: string | null }
   title: string
   description: string
   salary: string

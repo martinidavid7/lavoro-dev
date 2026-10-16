@@ -12,6 +12,7 @@ Tech job board: a **full stack** application with a REST API in **Laravel** and 
 - Job posting creation with server-side validation and per-field error messages
 - Sign-up and login as a **company** or a **candidate**, with session cookie authentication (Sanctum SPA mode, CSRF protected)
 - Route guards by role: only companies publish job postings, and only the company that published one can delete it
+- Public company pages (description, sector, city, size, contacts, logo and job postings), edited by the company itself, with logo upload
 - Favorite job postings persisted in the browser
 - Feedback notifications, plus loading, empty and error states
 - Italian UI: translated validation messages, euro amounts (gross annual salary, RAL) and Italian date format
@@ -45,6 +46,7 @@ composer install
 cp .env.example .env
 php artisan key:generate
 php artisan migrate --seed   # SQLite, with sample companies and job postings
+php artisan storage:link     # serves the uploaded company logos
 php artisan serve
 ```
 
@@ -77,6 +79,10 @@ cd web && npx vitest run
 | `POST` | `/api/job-postings` | Creates a job posting (`title`, `description`, `salary`, `work_mode`, `contract_type`). Companies only |
 | `PATCH` | `/api/job-postings/{id}` | Partial update. Owner only |
 | `DELETE` | `/api/job-postings/{id}` | Deletes. Owner only |
+| `GET` | `/api/companies/{id}` | Public company page, with the number of job postings |
+| `PATCH` | `/api/company-profile` | Updates the logged in company's profile (`name`, `description`, `sector`, `city`, `size`, `website`, `contact_email`, `phone`). Companies only |
+| `POST` | `/api/company-profile/logo` | Uploads the logo (multipart `logo`: JPG, PNG or WebP, up to 1 MB). Companies only |
+| `DELETE` | `/api/company-profile/logo` | Removes the logo. Companies only |
 | `POST` | `/api/register` | Creates an account and logs it in (`name`, `email`, `password`, `password_confirmation`, `role`: `company` or `candidate`) |
 | `POST` | `/api/login` | Logs in (`email`, `password`) |
 | `POST` | `/api/logout` | Logs out |
@@ -96,7 +102,8 @@ Responses include the translated labels (`work_mode_label`, `contract_type_label
 - [x] Authentication with Sanctum (login and sign-up)
 - [x] **Company** and **candidate** roles; companies publish and manage their own job postings
 - [ ] Candidate profile and applying to job postings
-- [ ] Company page: company details, published job postings and their applicants
+- [x] Company page: company details, contacts, logo and published job postings
+- [ ] Applicants of each job posting, with status (interview, rejected, hired)
 - [ ] Applications and status tracking
 - [ ] Job posting editing in the web app
 - [ ] API documentation (OpenAPI)

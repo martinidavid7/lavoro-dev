@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useFavoritesStore } from '@/stores/favorites'
 import type { JobPosting } from '@/types/jobPosting'
 import { formatCurrency, formatDate } from '@/utils/formatters'
+import CompanyLogo from './CompanyLogo.vue'
 import JobBadges from './JobBadges.vue'
 import StarIcon from './StarIcon.vue'
 
@@ -19,25 +20,33 @@ const favorites = useFavoritesStore()
     class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition hover:shadow-md"
   >
     <div class="flex items-start justify-between gap-4">
-      <div class="space-y-2">
-        <div>
-          <h3 class="text-lg font-semibold text-slate-900">
+      <div class="flex min-w-0 gap-4">
+        <CompanyLogo
+          :name="job.company.name"
+          :logo-url="job.company.logo_url"
+          class="hidden sm:grid"
+        />
+
+        <div class="min-w-0 space-y-2">
+          <div>
+            <h3 class="text-lg font-semibold text-slate-900">
+              <RouterLink
+                :to="{ name: 'jobs.show', params: { id: job.id } }"
+                class="hover:text-indigo-600"
+              >
+                {{ job.title }}
+              </RouterLink>
+            </h3>
             <RouterLink
-              :to="{ name: 'jobs.show', params: { id: job.id } }"
-              class="hover:text-indigo-600"
+              :to="{ name: 'company.show', params: { id: job.company.id } }"
+              class="text-sm text-slate-500 hover:text-indigo-600"
+              data-test="company"
             >
-              {{ job.title }}
+              {{ job.company.name }}
             </RouterLink>
-          </h3>
-          <RouterLink
-            :to="{ name: 'home', query: { azienda: job.company.id } }"
-            class="text-sm text-slate-500 hover:text-indigo-600"
-            data-test="company"
-          >
-            {{ job.company.name }}
-          </RouterLink>
+          </div>
+          <JobBadges :job="job" />
         </div>
-        <JobBadges :job="job" />
       </div>
 
       <button

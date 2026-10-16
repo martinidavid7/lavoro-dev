@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
+import CompanyLogo from '@/components/CompanyLogo.vue'
 import JobBadges from '@/components/JobBadges.vue'
 import StarIcon from '@/components/StarIcon.vue'
 import { ApiError } from '@/services/http'
@@ -71,17 +72,20 @@ async function remove() {
       class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8"
     >
       <header class="flex flex-wrap items-start justify-between gap-4">
-        <div class="space-y-3">
-          <div>
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900">{{ job.title }}</h1>
-            <RouterLink
-              :to="{ name: 'home', query: { azienda: job.company.id } }"
-              class="mt-1 inline-block text-slate-500 hover:text-indigo-600"
-            >
-              {{ job.company.name }}
-            </RouterLink>
+        <div class="flex min-w-0 gap-4">
+          <CompanyLogo :name="job.company.name" :logo-url="job.company.logo_url" />
+          <div class="min-w-0 space-y-3">
+            <div>
+              <h1 class="text-2xl font-bold tracking-tight text-slate-900">{{ job.title }}</h1>
+              <RouterLink
+                :to="{ name: 'company.show', params: { id: job.company.id } }"
+                class="mt-1 inline-block text-slate-500 hover:text-indigo-600"
+              >
+                {{ job.company.name }}
+              </RouterLink>
+            </div>
+            <JobBadges :job="job" />
           </div>
-          <JobBadges :job="job" />
         </div>
 
         <div class="flex gap-2">

@@ -9,7 +9,7 @@ import JobCard from '../JobCard.vue'
 
 const job: JobPosting = {
   id: 42,
-  company: { id: 7, name: 'Acme S.r.l.' },
+  company: { id: 7, name: 'Acme S.r.l.', logo_url: null },
   title: 'Sviluppatore Vue Mid',
   description: 'Lavorare con Vue 3 e TypeScript.',
   salary: '42000.00',

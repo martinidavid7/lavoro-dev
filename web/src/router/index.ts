@@ -37,6 +37,18 @@ const router = createRouter({
       props: (route) => ({ id: Number(route.params.id) }),
     },
     {
+      path: '/aziende/:id(\\d+)',
+      name: 'company.show',
+      component: () => import('@/views/CompanyView.vue'),
+      props: (route) => ({ id: Number(route.params.id) }),
+    },
+    {
+      path: '/azienda/profilo',
+      name: 'company.profile',
+      component: () => import('@/views/CompanyProfileView.vue'),
+      meta: { role: 'company' },
+    },
+    {
       path: '/:path(.*)*',
       name: 'not-found',
       component: () => import('@/views/NotFoundView.vue'),

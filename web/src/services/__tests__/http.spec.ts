@@ -91,6 +91,18 @@ describe('http', () => {
     expect(sentHeaders(fetchMock, 2)['X-XSRF-TOKEN']).toBe('nuovo')
   })
 
+  it('lets the browser set the multipart Content-Type for file uploads', async () => {
+    document.cookie = 'XSRF-TOKEN=t'
+    fetchMock.mockResolvedValue(json(200, { data: {} }))
+    const body = new FormData()
+    body.append('logo', new File(['png'], 'logo.png', { type: 'image/png' }))
+
+    await http('/company-profile/logo', { method: 'POST', body })
+
+    expect(sentHeaders(fetchMock, 0)).not.toHaveProperty('Content-Type')
+    expect(fetchMock.mock.calls[0]?.[1]?.body).toBe(body)
+  })
+
   it('turns error responses into ApiError with the validation errors', async () => {
     document.cookie = 'XSRF-TOKEN=t'
     fetchMock.mockResolvedValue(
