@@ -2,7 +2,7 @@
 import { reactive, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import FormField from '@/components/FormField.vue'
-import LogoUploader from '@/components/LogoUploader.vue'
+import ImageUploader from '@/components/ImageUploader.vue'
 import { useApiForm } from '@/composables/useApiForm'
 import {
   deleteCompanyLogo,
@@ -116,9 +116,9 @@ async function changeLogo(action: () => Promise<Company>, message: string) {
     <template v-else-if="company">
       <section class="space-y-3 rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
         <h2 class="font-semibold text-slate-900">Logo</h2>
-        <LogoUploader
+        <ImageUploader
           :name="form.name || company.name"
-          :logo-url="company.logo_url"
+          :image-url="company.logo_url"
           :busy="logoBusy"
           @upload="(file) => changeLogo(() => uploadCompanyLogo(file), 'Logo aggiornato')"
           @remove="changeLogo(deleteCompanyLogo, 'Logo rimosso')"

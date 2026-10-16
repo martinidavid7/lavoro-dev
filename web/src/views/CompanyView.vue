@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
-import CompanyLogo from '@/components/CompanyLogo.vue'
+import AvatarImage from '@/components/AvatarImage.vue'
 import JobCard from '@/components/JobCard.vue'
 import ListPagination from '@/components/ListPagination.vue'
 import { getCompany } from '@/services/companies'
@@ -103,7 +103,7 @@ async function remove(job: JobPosting) {
       <header
         class="flex flex-wrap items-center gap-5 rounded-xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8"
       >
-        <CompanyLogo :name="company.name" :logo-url="company.logo_url" size="lg" />
+        <AvatarImage :name="company.name" :image-url="company.logo_url" size="lg" />
 
         <div class="min-w-0 flex-1 space-y-2">
           <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">

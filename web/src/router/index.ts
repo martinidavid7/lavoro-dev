@@ -49,6 +49,12 @@ const router = createRouter({
       meta: { role: 'company' },
     },
     {
+      path: '/profilo',
+      name: 'candidate.profile',
+      component: () => import('@/views/CandidateProfileView.vue'),
+      meta: { role: 'candidate' },
+    },
+    {
       path: '/:path(.*)*',
       name: 'not-found',
       component: () => import('@/views/NotFoundView.vue'),

@@ -13,6 +13,8 @@ Tech job board: a **full stack** application with a REST API in **Laravel** and 
 - Sign-up and login as a **company** or a **candidate**, with session cookie authentication (Sanctum SPA mode, CSRF protected)
 - Route guards by role: only companies publish job postings, and only the company that published one can delete it
 - Public company pages (description, sector, city, size, contacts, logo and job postings), edited by the company itself, with logo upload
+- Candidate profile: contacts, professional profile, links, photo and PDF CV (stored privately, downloaded through the API)
+- Skills from a shared catalog, picked with a searchable multi-select: companies tag their job postings, candidates list their own and filter the job postings that match them, best matches first
 - Favorite job postings persisted in the browser
 - Feedback notifications, plus loading, empty and error states
 - Italian UI: translated validation messages, euro amounts (gross annual salary, RAL) and Italian date format
@@ -74,7 +76,8 @@ cd web && npx vitest run
 
 | Method | Route | Description |
 | --- | --- | --- |
-| `GET` | `/api/job-postings` | Paginated list. Filters: `title`, `work_mode`, `contract_type`, `company` (company id), `page` |
+| `GET` | `/api/job-postings` | Paginated list. Filters: `title`, `work_mode`, `contract_type`, `company` (company id), `skills[]` (skill ids, best matches first), `page` |
+| `GET` | `/api/skills` | The skills catalog |
 | `GET` | `/api/job-postings/{id}` | Detail |
 | `POST` | `/api/job-postings` | Creates a job posting (`title`, `description`, `salary`, `work_mode`, `contract_type`). Companies only |
 | `PATCH` | `/api/job-postings/{id}` | Partial update. Owner only |
@@ -83,6 +86,9 @@ cd web && npx vitest run
 | `PATCH` | `/api/company-profile` | Updates the logged in company's profile (`name`, `description`, `sector`, `city`, `size`, `website`, `contact_email`, `phone`). Companies only |
 | `POST` | `/api/company-profile/logo` | Uploads the logo (multipart `logo`: JPG, PNG or WebP, up to 1 MB). Companies only |
 | `DELETE` | `/api/company-profile/logo` | Removes the logo. Companies only |
+| `GET` / `PATCH` | `/api/candidate-profile` | The logged in candidate's profile (`name`, `phone`, `city`, `headline`, `experience_years`, `bio`, `linkedin_url`, `github_url`, `portfolio_url`, `skills`). Candidates only |
+| `POST` / `DELETE` | `/api/candidate-profile/photo` | Uploads (multipart `photo`: JPG, PNG or WebP, up to 1 MB) or removes the photo |
+| `POST` / `GET` / `DELETE` | `/api/candidate-profile/cv` | Uploads (multipart `cv`: PDF, up to 5 MB), downloads or removes the CV |
 | `POST` | `/api/register` | Creates an account and logs it in (`name`, `email`, `password`, `password_confirmation`, `role`: `company` or `candidate`) |
 | `POST` | `/api/login` | Logs in (`email`, `password`) |
 | `POST` | `/api/logout` | Logs out |
@@ -101,7 +107,8 @@ Responses include the translated labels (`work_mode_label`, `contract_type_label
 
 - [x] Authentication with Sanctum (login and sign-up)
 - [x] **Company** and **candidate** roles; companies publish and manage their own job postings
-- [ ] Candidate profile and applying to job postings
+- [x] Candidate profile with photo, CV and skills; job postings filtered by skills
+- [ ] Applying to job postings
 - [x] Company page: company details, contacts, logo and published job postings
 - [ ] Applicants of each job posting, with status (interview, rejected, hired)
 - [ ] Applications and status tracking

@@ -6,8 +6,10 @@ import JobFilters from '@/components/JobFilters.vue'
 import ListPagination from '@/components/ListPagination.vue'
 import { deleteJobPosting, listJobPostings } from '@/services/jobPostings'
 import { useAuthStore } from '@/stores/auth'
+import { useCandidateStore } from '@/stores/candidate'
 import { useFavoritesStore } from '@/stores/favorites'
 import { useNotificationsStore } from '@/stores/notifications'
+import { useSkillsStore } from '@/stores/skills'
 import type { Paginated } from '@/types/api'
 import type { JobPosting, JobPostingFilters } from '@/types/jobPosting'
 import { filtersFromQuery, filtersToQuery } from '@/utils/filters'
@@ -15,8 +17,10 @@ import { filtersFromQuery, filtersToQuery } from '@/utils/filters'
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
+const candidate = useCandidateStore()
 const favorites = useFavoritesStore()
 const notifications = useNotificationsStore()
+const skills = useSkillsStore()
 
 const result = ref<Paginated<JobPosting> | null>(null)
 const loading = ref(false)
@@ -34,6 +38,19 @@ const companyName = computed(() =>
   isOwnListing.value ? auth.user?.name : result.value?.data[0]?.company.name,
 )
 
+// The candidate's skills power the "my skills" filter; the catalog names the active ones.
+candidate.ensureLoaded().catch(() => undefined)
+skills.ensureLoaded().catch(() => undefined)
+
+const activeSkills = computed(() => skills.byIds(filters.value.skills ?? []))
+
+const isMySkillsFilter = computed(
+  () =>
+    candidate.skillIds.length > 0 &&
+    candidate.skillIds.length === filters.value.skills?.length &&
+    candidate.skillIds.every((id) => filters.value.skills?.includes(id)),
+)
+
 async function load() {
   loading.value = true
   error.value = null
@@ -49,13 +66,25 @@ async function load() {
 
 watch(filters, load, { immediate: true })
 
-// The search form does not hold the company filter, so it is kept from the URL.
+// The search form does not hold the company and skills filters, so they are kept from the URL.
 function search(newFilters: JobPostingFilters) {
-  router.push({ query: filtersToQuery({ ...newFilters, company: filters.value.company, page: 1 }) })
+  const { company, skills } = filters.value
+
+  router.push({ query: filtersToQuery({ ...newFilters, company, skills, page: 1 }) })
+}
+
+function applyFilters(changes: JobPostingFilters) {
+  router.push({ query: filtersToQuery({ ...filters.value, ...changes, page: 1 }) })
 }
 
 function clearCompany() {
-  router.push({ query: filtersToQuery({ ...filters.value, company: undefined, page: 1 }) })
+  applyFilters({ company: undefined })
+}
+
+function removeSkill(id: number) {
+  const remaining = (filters.value.skills ?? []).filter((skillId) => skillId !== id)
+
+  applyFilters({ skills: remaining.length ? remaining : undefined })
 }
 
 function changePage(page: number) {
@@ -99,6 +128,64 @@ async function remove(job: JobPosting) {
     <JobFilters :filters="filters" @search="search" />
 
     <div
+      v-if="activeSkills.length"
+      class="flex flex-wrap items-center gap-2 text-sm text-slate-600"
+      data-test="skills-filter"
+    >
+      {{ isMySkillsFilter ? 'Le mie competenze:' : 'Competenze:' }}
+      <span
+        v-for="skill in activeSkills"
+        :key="skill.id"
+        class="inline-flex items-center gap-1 rounded-full bg-emerald-50 py-1 pr-1 pl-3 font-medium text-emerald-700"
+      >
+        {{ skill.name }}
+        <button
+          type="button"
+          class="grid size-5 place-items-center rounded-full hover:bg-emerald-100"
+          :aria-label="`Rimuovi il filtro ${skill.name}`"
+          @click="removeSkill(skill.id)"
+        >
+          ×
+        </button>
+      </span>
+      <button
+        type="button"
+        class="text-slate-500 underline-offset-2 hover:text-slate-900 hover:underline"
+        @click="applyFilters({ skills: undefined })"
+      >
+        Rimuovi filtro
+      </button>
+    </div>
+
+    <div
+      v-else-if="auth.user?.role === 'candidate' && candidate.profile"
+      class="flex flex-wrap items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm"
+      data-test="my-skills-cta"
+    >
+      <template v-if="candidate.skillIds.length">
+        <span class="text-emerald-800">Cerchi offerte adatte a te?</span>
+        <button
+          type="button"
+          class="font-medium text-emerald-700 underline-offset-2 hover:underline"
+          @click="applyFilters({ skills: candidate.skillIds })"
+        >
+          Mostra le offerte per le mie competenze
+        </button>
+      </template>
+      <template v-else>
+        <span class="text-emerald-800">
+          Aggiungi le tue competenze per trovare le offerte più adatte a te.
+        </span>
+        <RouterLink
+          :to="{ name: 'candidate.profile' }"
+          class="font-medium text-emerald-700 underline-offset-2 hover:underline"
+        >
+          Completa il profilo
+        </RouterLink>
+      </template>
+    </div>
+
+    <div
       v-if="filters.company && !isOwnListing"
       class="flex items-center gap-2 text-sm text-slate-600"
       data-test="company-filter"
@@ -128,6 +215,7 @@ async function remove(job: JobPosting) {
       <p class="text-sm text-slate-500" aria-live="polite">
         {{ result.meta.total }}
         {{ result.meta.total === 1 ? 'offerta trovata' : 'offerte trovate' }}
+        <template v-if="activeSkills.length">, dalla più compatibile</template>
       </p>
 
       <div

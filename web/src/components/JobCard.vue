@@ -1,17 +1,20 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useCandidateStore } from '@/stores/candidate'
 import { useFavoritesStore } from '@/stores/favorites'
 import type { JobPosting } from '@/types/jobPosting'
 import { formatCurrency, formatDate } from '@/utils/formatters'
-import CompanyLogo from './CompanyLogo.vue'
+import AvatarImage from './AvatarImage.vue'
 import JobBadges from './JobBadges.vue'
+import SkillBadges from './SkillBadges.vue'
 import StarIcon from './StarIcon.vue'
 
 defineProps<{ job: JobPosting }>()
 defineEmits<{ delete: [job: JobPosting] }>()
 
 const auth = useAuthStore()
+const candidate = useCandidateStore()
 const favorites = useFavoritesStore()
 </script>
 
@@ -21,9 +24,9 @@ const favorites = useFavoritesStore()
   >
     <div class="flex items-start justify-between gap-4">
       <div class="flex min-w-0 gap-4">
-        <CompanyLogo
+        <AvatarImage
           :name="job.company.name"
-          :logo-url="job.company.logo_url"
+          :image-url="job.company.logo_url"
           class="hidden sm:grid"
         />
 
@@ -69,6 +72,8 @@ const favorites = useFavoritesStore()
     </div>
 
     <p class="mt-3 line-clamp-3 text-sm text-slate-600">{{ job.description }}</p>
+
+    <SkillBadges class="mt-3" :skills="job.skills" :matching="candidate.skillIds" :limit="6" />
 
     <footer
       class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4 text-sm"
