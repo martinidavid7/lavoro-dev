@@ -214,8 +214,8 @@ async function remove(job: JobPosting) {
     <template v-else-if="result">
       <p class="text-sm text-slate-500" aria-live="polite">
         {{ result.meta.total }}
-        {{ result.meta.total === 1 ? 'offerta trovata' : 'offerte trovate' }}
-        <template v-if="activeSkills.length">, dalla più compatibile</template>
+        {{ result.meta.total === 1 ? 'offerta trovata' : 'offerte trovate'
+        }}<template v-if="activeSkills.length">, dalla più compatibile</template>
       </p>
 
       <div
