@@ -55,14 +55,19 @@ const applications = ref<Application[] | null>(null)
 const counts = ref<ApplicationCounts | null>(null)
 const error = ref<string | null>(null)
 const updating = ref<number | null>(null)
+const reloading = ref(false)
 let request = 0
 
 const requiredSkills = computed(() => job.value?.skills.map((skill) => skill.id) ?? [])
 
+/**
+ * Reloads keep the current list on screen, so the board does not unmount and keeps
+ * its search and sort; the list is only cleared when switching job posting.
+ */
 async function load() {
   const current = ++request
   error.value = null
-  applications.value = null
+  reloading.value = true
 
   try {
     const response = await listJobApplications(props.id, effectiveStatus.value)
@@ -76,12 +81,16 @@ async function load() {
       e instanceof ApiError && e.isForbidden
         ? 'Puoi vedere solo i candidati delle tue offerte.'
         : 'Impossibile caricare le candidature.'
+  } finally {
+    if (current === request) reloading.value = false
   }
 }
 
 watch(
   () => props.id,
   async (id) => {
+    applications.value = null
+    counts.value = null
     job.value = null
     const result = await getJobPosting(id).catch(() => null)
     if (props.id === id) job.value = result
@@ -181,7 +190,13 @@ async function downloadCv(application: Application) {
       <p class="text-slate-600">{{ error }}</p>
     </div>
 
-    <template v-else-if="applications && counts">
+    <div
+      v-else-if="applications && counts"
+      class="space-y-6 transition-opacity"
+      :class="{ 'opacity-60': reloading && updating === null }"
+      :aria-busy="reloading"
+      data-test="applications-content"
+    >
       <ApplicationBoard
         v-if="boardMode"
         :applications="applications"
@@ -236,7 +251,7 @@ async function downloadCv(application: Application) {
             : 'Nessuna candidatura con questo stato.'
         }}
       </div>
-    </template>
+    </div>
 
     <div v-else class="space-y-4" aria-busy="true">
       <div v-for="n in 3" :key="n" class="h-44 animate-pulse rounded-xl bg-slate-200/70" />

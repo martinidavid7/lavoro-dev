@@ -157,6 +157,45 @@ describe('JobApplicationsView', () => {
     expect(wrapper.findAll('[data-test="board-status"]')[0]!.attributes('disabled')).toBeUndefined()
   })
 
+  it('keeps the board search and sort after a successful move', async () => {
+    vi.mocked(updateApplicationStatus).mockResolvedValue(applicationOf(1, 'Marco', 'hired'))
+    const { wrapper } = await mountView({ vista: 'kanban' })
+    const sort = () => wrapper.get('select:not([data-test])').element as HTMLSelectElement
+    const search = () => wrapper.get('input[type="search"]').element as HTMLInputElement
+    await wrapper.get('select:not([data-test])').setValue('name')
+    await wrapper.get('input[type="search"]').setValue('Mar')
+
+    await wrapper.findAll('[data-test="board-status"]')[0]!.setValue('hired')
+    await flushPromises()
+
+    expect(listJobApplications).toHaveBeenCalledTimes(2)
+    expect(search().value).toBe('Mar')
+    expect(sort().value).toBe('name')
+  })
+
+  it('keeps the list on screen while switching status tab', async () => {
+    let resolveReload!: (value: Awaited<ReturnType<typeof listJobApplications>>) => void
+    const { wrapper, router } = await mountView()
+    vi.mocked(listJobApplications).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveReload = resolve
+        }),
+    )
+
+    await router.push({ query: { stato: 'colloquio' } })
+    await flushPromises()
+
+    expect(wrapper.findAll('article')).toHaveLength(2)
+    expect(wrapper.get('[data-test="applications-content"]').attributes('aria-busy')).toBe('true')
+
+    resolveReload({ data: [applicationOf(2, 'Sara', 'interview')], meta: { counts } })
+    await flushPromises()
+
+    expect(wrapper.findAll('article')).toHaveLength(1)
+    expect(wrapper.get('[data-test="applications-content"]').attributes('aria-busy')).toBe('false')
+  })
+
   it('supports dragging a candidate to another column', async () => {
     vi.mocked(updateApplicationStatus).mockResolvedValue(applicationOf(1, 'Marco', 'interview'))
     const { wrapper } = await mountView({ vista: 'kanban' })
