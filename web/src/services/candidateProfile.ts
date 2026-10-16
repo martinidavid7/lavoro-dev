@@ -1,5 +1,6 @@
 import type { Resource } from '@/types/api'
 import type { CandidateProfile, CandidateProfilePayload } from '@/types/candidate'
+import { saveFile } from '@/utils/saveFile'
 import { download, http } from './http'
 
 export async function getCandidateProfile() {
@@ -39,14 +40,8 @@ export const uploadCv = (file: File) => upload('/candidate-profile/cv', 'cv', fi
 export const deleteCv = () => remove('/candidate-profile/cv')
 
 /** Downloads the candidate's own CV and saves it with its original name. */
-export async function downloadCv(fallbackName = 'curriculum.pdf') {
+export async function downloadCv() {
   const { blob, filename } = await download('/candidate-profile/cv')
-  const url = URL.createObjectURL(blob)
-  const link = Object.assign(document.createElement('a'), {
-    href: url,
-    download: filename ?? fallbackName,
-  })
 
-  link.click()
-  URL.revokeObjectURL(url)
+  saveFile(blob, filename ?? 'curriculum.pdf')
 }

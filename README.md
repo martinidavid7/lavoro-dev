@@ -14,6 +14,7 @@ Tech job board: a **full stack** application with a REST API in **Laravel** and 
 - Route guards by role: only companies publish job postings, and only the company that published one can delete it
 - Public company pages (description, sector, city, size, contacts, logo and job postings), edited by the company itself, with logo upload
 - Candidate profile: contacts, professional profile, links, photo and PDF CV (stored privately, downloaded through the API)
+- Applications: candidates apply with their CV and an optional cover letter, and follow the status in "Le mie candidature"; companies see the applicants of each job posting (profile, matching skills, cover letter, CV) and move them through *In valutazione*, *Colloquio*, *Non selezionato* and *Assunto*
 - Skills from a shared catalog, picked with a searchable multi-select: companies tag their job postings, candidates list their own and filter the job postings that match them, best matches first
 - Favorite job postings persisted in the browser
 - Feedback notifications, plus loading, empty and error states
@@ -89,6 +90,12 @@ cd web && npx vitest run
 | `GET` / `PATCH` | `/api/candidate-profile` | The logged in candidate's profile (`name`, `phone`, `city`, `headline`, `experience_years`, `bio`, `linkedin_url`, `github_url`, `portfolio_url`, `skills`). Candidates only |
 | `POST` / `DELETE` | `/api/candidate-profile/photo` | Uploads (multipart `photo`: JPG, PNG or WebP, up to 1 MB) or removes the photo |
 | `POST` / `GET` / `DELETE` | `/api/candidate-profile/cv` | Uploads (multipart `cv`: PDF, up to 5 MB), downloads or removes the CV |
+| `POST` | `/api/job-postings/{id}/applications` | Applies, sending the CV in the profile (`cover_letter` optional). Candidates only, once per job posting |
+| `GET` | `/api/job-postings/{id}/applications` | The applicants, with counts per status. Filter: `status`. Owner company only |
+| `GET` | `/api/applications` | The logged in candidate's applications |
+| `PATCH` | `/api/applications/{id}` | Changes the status (`in_review`, `interview`, `rejected`, `hired`). Owner company only |
+| `DELETE` | `/api/applications/{id}` | Withdraws the application. The candidate, unless already hired |
+| `GET` | `/api/applications/{id}/cv` | The CV sent with the application. The candidate and the owner company |
 | `POST` | `/api/register` | Creates an account and logs it in (`name`, `email`, `password`, `password_confirmation`, `role`: `company` or `candidate`) |
 | `POST` | `/api/login` | Logs in (`email`, `password`) |
 | `POST` | `/api/logout` | Logs out |
@@ -108,9 +115,8 @@ Responses include the translated labels (`work_mode_label`, `contract_type_label
 - [x] Authentication with Sanctum (login and sign-up)
 - [x] **Company** and **candidate** roles; companies publish and manage their own job postings
 - [x] Candidate profile with photo, CV and skills; job postings filtered by skills
-- [ ] Applying to job postings
 - [x] Company page: company details, contacts, logo and published job postings
-- [ ] Applicants of each job posting, with status (interview, rejected, hired)
+- [x] Applications, with the applicants of each job posting and their status (interview, rejected, hired)
 - [ ] Applications and status tracking
 - [ ] Job posting editing in the web app
 - [ ] API documentation (OpenAPI)

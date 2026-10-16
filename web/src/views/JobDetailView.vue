@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
+import ApplicationStatusBadge from '@/components/ApplicationStatusBadge.vue'
+import ApplyDialog from '@/components/ApplyDialog.vue'
 import AvatarImage from '@/components/AvatarImage.vue'
 import JobBadges from '@/components/JobBadges.vue'
 import SkillBadges from '@/components/SkillBadges.vue'
 import StarIcon from '@/components/StarIcon.vue'
 import { ApiError } from '@/services/http'
 import { deleteJobPosting, getJobPosting } from '@/services/jobPostings'
+import { useApplicationsStore } from '@/stores/applications'
 import { useAuthStore } from '@/stores/auth'
 import { useCandidateStore } from '@/stores/candidate'
 import { useFavoritesStore } from '@/stores/favorites'
@@ -18,6 +21,7 @@ const props = defineProps<{ id: number }>()
 
 const router = useRouter()
 const auth = useAuthStore()
+const applications = useApplicationsStore()
 const candidate = useCandidateStore()
 const favorites = useFavoritesStore()
 const notifications = useNotificationsStore()
@@ -25,8 +29,12 @@ const notifications = useNotificationsStore()
 const job = ref<JobPosting | null>(null)
 const error = ref<string | null>(null)
 
-// Highlights the skills the candidate has; nothing happens for guests and companies.
+// The candidate's skills and applications; nothing happens for guests and companies.
 candidate.ensureLoaded().catch(() => undefined)
+applications.ensureLoaded().catch(() => undefined)
+
+const applyOpen = ref(false)
+const application = computed(() => applications.forJob(props.id))
 
 const matchingCount = computed(
   () => job.value?.skills.filter((skill) => candidate.hasSkill(skill.id)).length ?? 0,
@@ -127,6 +135,57 @@ async function remove() {
           <dd class="font-semibold text-slate-900">{{ formatDate(job.published_at) }}</dd>
         </div>
       </dl>
+
+      <section
+        v-if="!auth.user || auth.user.role === 'candidate' || auth.canManage(job)"
+        class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-indigo-100 bg-indigo-50/60 p-4"
+        data-test="apply-bar"
+      >
+        <template v-if="auth.canManage(job)">
+          <p class="text-sm text-slate-700">Gestisci le candidature ricevute per questa offerta.</p>
+          <RouterLink
+            :to="{ name: 'jobs.applications', params: { id: job.id } }"
+            class="btn-primary"
+          >
+            Vedi i candidati
+          </RouterLink>
+        </template>
+
+        <template v-else-if="application">
+          <p class="flex flex-wrap items-center gap-2 text-sm text-slate-700">
+            Ti sei candidato il {{ formatDate(application.created_at) }}
+            <ApplicationStatusBadge :status="application.status" />
+          </p>
+          <RouterLink :to="{ name: 'applications' }" class="btn-secondary">
+            Le mie candidature
+          </RouterLink>
+        </template>
+
+        <template v-else-if="auth.user">
+          <p class="text-sm text-slate-700">Ti interessa questa posizione?</p>
+          <button
+            type="button"
+            class="btn-primary"
+            :disabled="!applications.loaded"
+            data-test="apply"
+            @click="applyOpen = true"
+          >
+            Candidati
+          </button>
+        </template>
+
+        <template v-else>
+          <p class="text-sm text-slate-700">Ti interessa questa posizione?</p>
+          <RouterLink
+            :to="{ name: 'login', query: { redirect: $route.fullPath } }"
+            class="btn-primary"
+          >
+            Accedi per candidarti
+          </RouterLink>
+        </template>
+      </section>
+
+      <ApplyDialog v-model:open="applyOpen" :job="job" />
 
       <section v-if="job.skills.length">
         <h2 class="mb-2 font-semibold text-slate-900">Competenze richieste</h2>

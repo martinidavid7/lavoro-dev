@@ -88,14 +88,18 @@ const favorites = useFavoritesStore()
         <span>Pubblicata il {{ formatDate(job.published_at) }}</span>
       </div>
 
-      <button
-        v-if="auth.canManage(job)"
-        type="button"
-        class="btn-danger px-3 py-1.5"
-        @click="$emit('delete', job)"
-      >
-        Elimina
-      </button>
+      <div v-if="auth.canManage(job)" class="flex gap-2">
+        <RouterLink
+          :to="{ name: 'jobs.applications', params: { id: job.id } }"
+          class="btn-secondary px-3 py-1.5"
+          data-test="applicants"
+        >
+          Candidati
+        </RouterLink>
+        <button type="button" class="btn-danger px-3 py-1.5" @click="$emit('delete', job)">
+          Elimina
+        </button>
+      </div>
     </footer>
   </article>
 </template>

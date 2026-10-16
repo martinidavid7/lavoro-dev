@@ -54,6 +54,15 @@ async function logout() {
           Le mie offerte
         </RouterLink>
         <RouterLink
+          v-if="auth.user?.role === 'candidate'"
+          :to="{ name: 'applications' }"
+          class="rounded-lg px-3 py-2 text-slate-600 hover:text-slate-900"
+          exact-active-class="bg-slate-100 text-slate-900"
+          data-test="my-applications"
+        >
+          Le mie candidature
+        </RouterLink>
+        <RouterLink
           v-if="auth.isCompany"
           :to="{ name: 'jobs.create' }"
           class="rounded-lg px-3 py-2 text-slate-600 hover:text-slate-900"
