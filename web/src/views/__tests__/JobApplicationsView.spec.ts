@@ -126,4 +126,90 @@ describe('JobApplicationsView', () => {
 
     expect(wrapper.text()).toContain('Puoi vedere solo i candidati delle tue offerte.')
   })
+
+  it('loads every status for the board even when the URL has a list filter', async () => {
+    const { wrapper } = await mountView({ vista: 'kanban', stato: 'colloquio' })
+    expect(listJobApplications).toHaveBeenLastCalledWith(42, undefined)
+    expect(wrapper.findAll('[data-test="board-status"]')).toHaveLength(2)
+    expect(wrapper.find('[data-test="status-tab"]').exists()).toBe(false)
+    await wrapper.get('input[type="search"]').setValue('Sara')
+    expect(wrapper.findAll('article')).toHaveLength(1)
+    expect(wrapper.find('article')!.text()).toContain('Sara')
+  })
+
+  it('moves immediately and restores the original column if the API rejects the move', async () => {
+    let rejectMove!: (error: Error) => void
+    vi.mocked(updateApplicationStatus).mockImplementation(
+      () =>
+        new Promise((_, reject) => {
+          rejectMove = reject
+        }),
+    )
+    const { wrapper } = await mountView({ vista: 'kanban' })
+    const columns = () => wrapper.findAll('section[aria-label]')
+    await wrapper.findAll('[data-test="board-status"]')[0]!.setValue('hired')
+    expect(columns()[3]!.text()).toContain('Marco')
+    expect(columns()[0]!.findAll('article')).toHaveLength(0)
+    rejectMove(new Error('Server unavailable'))
+    await flushPromises()
+    expect(columns()[0]!.text()).toContain('Marco')
+    expect(columns()[3]!.findAll('article')).toHaveLength(0)
+    expect(wrapper.findAll('[data-test="board-status"]')[0]!.attributes('disabled')).toBeUndefined()
+  })
+
+  it('keeps the board search and sort after a successful move', async () => {
+    vi.mocked(updateApplicationStatus).mockResolvedValue(applicationOf(1, 'Marco', 'hired'))
+    const { wrapper } = await mountView({ vista: 'kanban' })
+    const sort = () => wrapper.get('select:not([data-test])').element as HTMLSelectElement
+    const search = () => wrapper.get('input[type="search"]').element as HTMLInputElement
+    await wrapper.get('select:not([data-test])').setValue('name')
+    await wrapper.get('input[type="search"]').setValue('Mar')
+
+    await wrapper.findAll('[data-test="board-status"]')[0]!.setValue('hired')
+    await flushPromises()
+
+    expect(listJobApplications).toHaveBeenCalledTimes(2)
+    expect(search().value).toBe('Mar')
+    expect(sort().value).toBe('name')
+  })
+
+  it('keeps the list on screen while switching status tab', async () => {
+    let resolveReload!: (value: Awaited<ReturnType<typeof listJobApplications>>) => void
+    const { wrapper, router } = await mountView()
+    vi.mocked(listJobApplications).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveReload = resolve
+        }),
+    )
+
+    await router.push({ query: { stato: 'colloquio' } })
+    await flushPromises()
+
+    expect(wrapper.findAll('article')).toHaveLength(2)
+    expect(wrapper.get('[data-test="applications-content"]').attributes('aria-busy')).toBe('true')
+
+    resolveReload({ data: [applicationOf(2, 'Sara', 'interview')], meta: { counts } })
+    await flushPromises()
+
+    expect(wrapper.findAll('article')).toHaveLength(1)
+    expect(wrapper.get('[data-test="applications-content"]').attributes('aria-busy')).toBe('false')
+  })
+
+  it('supports dragging a candidate to another column', async () => {
+    vi.mocked(updateApplicationStatus).mockResolvedValue(applicationOf(1, 'Marco', 'interview'))
+    const { wrapper } = await mountView({ vista: 'kanban' })
+    const data: Record<string, string> = {}
+    const dataTransfer = {
+      effectAllowed: '',
+      setData: (key: string, value: string) => {
+        data[key] = value
+      },
+      getData: (key: string) => data[key],
+    }
+    await wrapper.findAll('article')[0]!.trigger('dragstart', { dataTransfer })
+    await wrapper.findAll('section[aria-label]')[1]!.trigger('drop', { dataTransfer })
+    await flushPromises()
+    expect(updateApplicationStatus).toHaveBeenCalledWith(1, 'interview')
+  })
 })

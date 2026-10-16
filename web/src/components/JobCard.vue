@@ -9,8 +9,13 @@ import FavoriteButton from './FavoriteButton.vue'
 import JobBadges from './JobBadges.vue'
 import SkillBadges from './SkillBadges.vue'
 
-defineProps<{ job: JobPosting }>()
-defineEmits<{ delete: [job: JobPosting] }>()
+defineProps<{
+  job: JobPosting
+  comparisonEnabled?: boolean
+  comparisonSelected?: boolean
+  comparisonDisabled?: boolean
+}>()
+defineEmits<{ delete: [job: JobPosting]; compare: [job: JobPosting] }>()
 
 const auth = useAuthStore()
 const candidate = useCandidateStore()
@@ -70,13 +75,31 @@ const candidate = useCandidateStore()
         <span>Pubblicata il {{ formatDate(job.published_at) }}</span>
       </div>
 
-      <div v-if="auth.canManage(job)" class="flex gap-2">
+      <button
+        v-if="comparisonEnabled"
+        type="button"
+        class="btn-secondary px-3 py-1.5"
+        :aria-pressed="comparisonSelected"
+        :disabled="comparisonDisabled && !comparisonSelected"
+        :aria-label="`${comparisonSelected ? 'Rimuovi dal confronto' : 'Confronta'}: ${job.title}`"
+        @click="$emit('compare', job)"
+      >
+        {{ comparisonSelected ? 'Nel confronto' : 'Confronta' }}
+      </button>
+      <div v-if="auth.canManage(job)" class="flex flex-wrap gap-2">
         <RouterLink
           :to="{ name: 'jobs.applications', params: { id: job.id } }"
           class="btn-secondary px-3 py-1.5"
           data-test="applicants"
         >
           Candidati
+        </RouterLink>
+        <RouterLink
+          :to="{ name: 'jobs.edit', params: { id: job.id } }"
+          class="btn-secondary px-3 py-1.5"
+          data-test="edit"
+        >
+          Modifica
         </RouterLink>
         <button type="button" class="btn-danger px-3 py-1.5" @click="$emit('delete', job)">
           Elimina
