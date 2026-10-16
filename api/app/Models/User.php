@@ -8,6 +8,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -53,6 +54,51 @@ class User extends Authenticatable
     public function companyProfile(): HasOne
     {
         return $this->hasOne(CompanyProfile::class);
+    }
+
+    /**
+     * Profile of a candidate (contacts, professional profile, photo, CV).
+     *
+     * @return HasOne<CandidateProfile, $this>
+     */
+    public function candidateProfile(): HasOne
+    {
+        return $this->hasOne(CandidateProfile::class);
+    }
+
+    /**
+     * Skills of a candidate.
+     *
+     * @return BelongsToMany<Skill, $this>
+     */
+    public function skills(): BelongsToMany
+    {
+        return $this->belongsToMany(Skill::class)->orderBy('name');
+    }
+
+    /**
+     * Applications sent by a candidate.
+     *
+     * @return HasMany<Application, $this>
+     */
+    public function applications(): HasMany
+    {
+        return $this->hasMany(Application::class, 'candidate_id');
+    }
+
+    /**
+     * Job postings a candidate saved as favorite.
+     *
+     * @return BelongsToMany<JobPosting, $this>
+     */
+    public function favorites(): BelongsToMany
+    {
+        return $this->belongsToMany(JobPosting::class, 'favorites')->withTimestamps();
+    }
+
+    public function isCandidate(): bool
+    {
+        return $this->role === UserRole::Candidate;
     }
 
     public function isCompany(): bool

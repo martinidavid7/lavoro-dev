@@ -2,6 +2,7 @@
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import FormField from '@/components/FormField.vue'
+import SkillPicker from '@/components/SkillPicker.vue'
 import { useApiForm } from '@/composables/useApiForm'
 import { createJobPosting } from '@/services/jobPostings'
 import { useNotificationsStore } from '@/stores/notifications'
@@ -16,9 +17,10 @@ const form = reactive({
   salary: null as number | null,
   work_mode: null as WorkMode | null,
   contract_type: null as ContractType | null,
+  skills: [] as number[],
 })
 
-const { errors, submitting, submit } = useApiForm("Impossibile pubblicare l'offerta")
+const { errors, submitting, submit, errorsFor } = useApiForm("Impossibile pubblicare l'offerta")
 
 async function publish() {
   // The real validation lives in the API; null fields come back as a 422 error.
@@ -139,6 +141,15 @@ async function publish() {
           </select>
         </FormField>
       </div>
+
+      <FormField
+        id="skills"
+        label="Competenze richieste"
+        hint="I candidati con queste competenze vedranno la tua offerta tra le prime."
+        :errors="errorsFor('skills')"
+      >
+        <SkillPicker id="skills" v-model="form.skills" :max="15" :invalid="!!errorsFor('skills')" />
+      </FormField>
 
       <div class="flex justify-end border-t border-slate-100 pt-5">
         <button type="submit" class="btn-primary" :disabled="submitting">

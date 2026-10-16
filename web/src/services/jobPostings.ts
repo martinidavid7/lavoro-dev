@@ -6,7 +6,9 @@ export function listJobPostings(filters: JobPostingFilters = {}) {
   const params = new URLSearchParams()
 
   for (const [key, value] of Object.entries(filters)) {
-    if (value !== undefined && value !== '') params.set(key, String(value))
+    // Arrays use Laravel's syntax: ?skills[]=1&skills[]=2
+    if (Array.isArray(value)) value.forEach((item) => params.append(`${key}[]`, String(item)))
+    else if (value !== undefined && value !== '') params.set(key, String(value))
   }
 
   const query = params.toString()

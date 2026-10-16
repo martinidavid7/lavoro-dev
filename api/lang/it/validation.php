@@ -129,6 +129,18 @@ return [
         'contact_email' => 'email di contatto',
         'phone' => 'telefono',
         'logo' => 'logo',
+        'headline' => 'qualifica',
+        'experience_years' => 'anni di esperienza',
+        'bio' => 'presentazione',
+        'linkedin_url' => 'LinkedIn',
+        'github_url' => 'GitHub',
+        'portfolio_url' => 'portfolio',
+        'photo' => 'foto',
+        'cv' => 'curriculum',
+        'skills' => 'competenze',
+        'skills.*' => 'competenza',
+        'cover_letter' => 'lettera di presentazione',
+        'status' => 'stato',
     ],
 
 ];

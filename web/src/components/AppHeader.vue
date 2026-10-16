@@ -54,6 +54,15 @@ async function logout() {
           Le mie offerte
         </RouterLink>
         <RouterLink
+          v-if="auth.user?.role === 'candidate'"
+          :to="{ name: 'applications' }"
+          class="rounded-lg px-3 py-2 text-slate-600 hover:text-slate-900"
+          exact-active-class="bg-slate-100 text-slate-900"
+          data-test="my-applications"
+        >
+          Le mie candidature
+        </RouterLink>
+        <RouterLink
           v-if="auth.isCompany"
           :to="{ name: 'jobs.create' }"
           class="rounded-lg px-3 py-2 text-slate-600 hover:text-slate-900"
@@ -62,9 +71,11 @@ async function logout() {
           Pubblica un'offerta
         </RouterLink>
         <button
+          v-if="favorites.enabled"
           type="button"
           class="relative ml-1 rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
           aria-label="Apri le offerte preferite"
+          data-test="open-favorites"
           @click="$emit('openFavorites')"
         >
           <StarIcon class="size-5" />
@@ -81,23 +92,19 @@ async function logout() {
           class="ml-2 flex items-center gap-3 border-l border-slate-200 pl-3"
           data-test="user-menu"
         >
-          <component
-            :is="auth.isCompany ? RouterLink : 'span'"
-            v-bind="
+          <RouterLink
+            :to="
               auth.isCompany
-                ? {
-                    to: { name: 'company.show', params: { id: auth.user.id } },
-                    title: 'La mia azienda',
-                  }
-                : {}
+                ? { name: 'company.show', params: { id: auth.user.id } }
+                : { name: 'candidate.profile' }
             "
-            class="hidden text-right leading-tight sm:block"
-            :class="{ 'rounded-lg px-2 py-1 hover:bg-slate-100': auth.isCompany }"
+            :title="auth.isCompany ? 'La mia azienda' : 'Il mio profilo'"
+            class="hidden rounded-lg px-2 py-1 text-right leading-tight hover:bg-slate-100 sm:block"
             data-test="user-name"
           >
             <span class="block text-slate-900">{{ auth.user.name }}</span>
             <span class="block text-xs font-normal text-slate-500">{{ auth.user.role_label }}</span>
-          </component>
+          </RouterLink>
           <button type="button" class="btn-secondary px-3 py-1.5" @click="logout">Esci</button>
         </div>
 

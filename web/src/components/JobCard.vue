@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { useFavoritesStore } from '@/stores/favorites'
+import { useCandidateStore } from '@/stores/candidate'
 import type { JobPosting } from '@/types/jobPosting'
 import { formatCurrency, formatDate } from '@/utils/formatters'
-import CompanyLogo from './CompanyLogo.vue'
+import AvatarImage from './AvatarImage.vue'
+import FavoriteButton from './FavoriteButton.vue'
 import JobBadges from './JobBadges.vue'
-import StarIcon from './StarIcon.vue'
+import SkillBadges from './SkillBadges.vue'
 
 defineProps<{ job: JobPosting }>()
 defineEmits<{ delete: [job: JobPosting] }>()
 
 const auth = useAuthStore()
-const favorites = useFavoritesStore()
+const candidate = useCandidateStore()
 </script>
 
 <template>
@@ -21,9 +22,9 @@ const favorites = useFavoritesStore()
   >
     <div class="flex items-start justify-between gap-4">
       <div class="flex min-w-0 gap-4">
-        <CompanyLogo
+        <AvatarImage
           :name="job.company.name"
-          :logo-url="job.company.logo_url"
+          :image-url="job.company.logo_url"
           class="hidden sm:grid"
         />
 
@@ -49,26 +50,12 @@ const favorites = useFavoritesStore()
         </div>
       </div>
 
-      <button
-        type="button"
-        class="rounded-lg p-2 transition"
-        :class="
-          favorites.isFavorite(job.id)
-            ? 'text-amber-500 hover:bg-amber-50'
-            : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'
-        "
-        :aria-pressed="favorites.isFavorite(job.id)"
-        :aria-label="
-          favorites.isFavorite(job.id) ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'
-        "
-        data-test="favorite"
-        @click="favorites.toggle(job)"
-      >
-        <StarIcon class="size-5" :filled="favorites.isFavorite(job.id)" />
-      </button>
+      <FavoriteButton :job="job" />
     </div>
 
     <p class="mt-3 line-clamp-3 text-sm text-slate-600">{{ job.description }}</p>
+
+    <SkillBadges class="mt-3" :skills="job.skills" :matching="candidate.skillIds" :limit="6" />
 
     <footer
       class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4 text-sm"
@@ -83,14 +70,18 @@ const favorites = useFavoritesStore()
         <span>Pubblicata il {{ formatDate(job.published_at) }}</span>
       </div>
 
-      <button
-        v-if="auth.canManage(job)"
-        type="button"
-        class="btn-danger px-3 py-1.5"
-        @click="$emit('delete', job)"
-      >
-        Elimina
-      </button>
+      <div v-if="auth.canManage(job)" class="flex gap-2">
+        <RouterLink
+          :to="{ name: 'jobs.applications', params: { id: job.id } }"
+          class="btn-secondary px-3 py-1.5"
+          data-test="applicants"
+        >
+          Candidati
+        </RouterLink>
+        <button type="button" class="btn-danger px-3 py-1.5" @click="$emit('delete', job)">
+          Elimina
+        </button>
+      </div>
     </footer>
   </article>
 </template>

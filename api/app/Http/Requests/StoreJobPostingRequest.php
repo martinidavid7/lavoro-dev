@@ -31,6 +31,8 @@ class StoreJobPostingRequest extends FormRequest
             'salary' => ['required', 'numeric', 'min:0', 'max:99999999.99', 'decimal:0,2'],
             'work_mode' => ['required', Rule::enum(WorkMode::class)],
             'contract_type' => ['required', Rule::enum(ContractType::class)],
+            'skills' => ['nullable', 'array', 'max:15'],
+            'skills.*' => ['integer', 'distinct', Rule::exists('skills', 'id')],
         ];
     }
 }

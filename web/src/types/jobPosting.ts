@@ -1,3 +1,5 @@
+import type { Skill } from './skill'
+
 /** Values mirror the App\Enums\WorkMode and App\Enums\ContractType enums of the API. */
 export type WorkMode = 1 | 2 | 3
 export type ContractType = 1 | 2 | 3 | 4
@@ -25,6 +27,7 @@ export interface JobPosting {
   work_mode_label: string
   contract_type: ContractType
   contract_type_label: string
+  skills: Skill[]
   published_at: string
   created_at: string
   updated_at: string
@@ -36,6 +39,8 @@ export interface JobPostingPayload {
   salary: number
   work_mode: WorkMode
   contract_type: ContractType
+  /** Ids of the required skills. */
+  skills: number[]
 }
 
 export interface JobPostingFilters {
@@ -44,5 +49,7 @@ export interface JobPostingFilters {
   contract_type?: ContractType
   /** Id of the company that published the job postings. */
   company?: number
+  /** Skill ids: job postings requiring at least one of them, best matches first. */
+  skills?: number[]
   page?: number
 }

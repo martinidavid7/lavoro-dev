@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest'
-import { ApiError, http } from '../http'
+import { ApiError, download, http } from '../http'
 
 const API = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api'
 const CSRF_URL = new URL('/sanctum/csrf-cookie', API).href
@@ -101,6 +101,34 @@ describe('http', () => {
 
     expect(sentHeaders(fetchMock, 0)).not.toHaveProperty('Content-Type')
     expect(fetchMock.mock.calls[0]?.[1]?.body).toBe(body)
+  })
+
+  it('downloads a protected file with its name from Content-Disposition', async () => {
+    fetchMock.mockResolvedValue(
+      new Response('%PDF', {
+        status: 200,
+        headers: { 'Content-Disposition': 'attachment; filename="CV Giulia Rossi.pdf"' },
+      }),
+    )
+
+    const { blob, filename } = await download('/candidate-profile/cv')
+
+    expect(filename).toBe('CV Giulia Rossi.pdf')
+    expect(await blob.text()).toBe('%PDF')
+    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ credentials: 'include' })
+  })
+
+  it('reads UTF-8 file names', async () => {
+    fetchMock.mockResolvedValue(
+      new Response('%PDF', {
+        headers: {
+          'Content-Disposition':
+            "attachment; filename=cv.pdf; filename*=UTF-8''Curriculum%20Nicol%C3%B2.pdf",
+        },
+      }),
+    )
+
+    expect((await download('/candidate-profile/cv')).filename).toBe('Curriculum Nicolò.pdf')
   })
 
   it('turns error responses into ApiError with the validation errors', async () => {

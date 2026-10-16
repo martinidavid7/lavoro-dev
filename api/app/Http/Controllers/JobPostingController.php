@@ -16,10 +16,14 @@ use Illuminate\Validation\Rule;
 
 class JobPostingController extends Controller
 {
+    /** Relations returned with every job posting. */
+    private const RELATIONS = ['company.companyProfile', 'skills'];
+
     /**
      * GET /api/job-postings — paginated list, newest first.
      *
-     * Optional query string filters: ?title=dev&work_mode=1&contract_type=2&company=5
+     * Optional query string filters: ?title=dev&work_mode=1&contract_type=2&company=5&skills[]=3&skills[]=7
+     * With skills, the job postings matching more of them come first.
      */
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -28,10 +32,12 @@ class JobPostingController extends Controller
             'work_mode' => ['nullable', Rule::enum(WorkMode::class)],
             'contract_type' => ['nullable', Rule::enum(ContractType::class)],
             'company' => ['nullable', 'integer', 'min:1'],
+            'skills' => ['nullable', 'array', 'max:30'],
+            'skills.*' => ['integer', 'min:1'],
         ]);
 
         $jobPostings = JobPosting::query()
-            ->with('company.companyProfile')
+            ->with(self::RELATIONS)
             ->applyFilters($filters)
             ->orderByDesc('published_at')
             ->paginate(10)
@@ -48,11 +54,12 @@ class JobPostingController extends Controller
         Gate::authorize('create', JobPosting::class);
 
         $jobPosting = $request->user()->jobPostings()->create([
-            ...$request->validated(),
+            ...$request->safe()->except('skills'),
             'published_at' => now(),
         ]);
+        $jobPosting->skills()->sync($request->validated('skills', []));
 
-        return new JobPostingResource($jobPosting->load('company.companyProfile'));
+        return new JobPostingResource($jobPosting->load(self::RELATIONS));
     }
 
     /**
@@ -60,7 +67,7 @@ class JobPostingController extends Controller
      */
     public function show(JobPosting $jobPosting): JobPostingResource
     {
-        return new JobPostingResource($jobPosting->load('company.companyProfile'));
+        return new JobPostingResource($jobPosting->load(self::RELATIONS));
     }
 
     /**
@@ -70,9 +77,13 @@ class JobPostingController extends Controller
     {
         Gate::authorize('update', $jobPosting);
 
-        $jobPosting->update($request->validated());
+        $jobPosting->update($request->safe()->except('skills'));
 
-        return new JobPostingResource($jobPosting->load('company.companyProfile'));
+        if ($request->has('skills')) {
+            $jobPosting->skills()->sync($request->validated('skills', []));
+        }
+
+        return new JobPostingResource($jobPosting->load(self::RELATIONS));
     }
 
     /**

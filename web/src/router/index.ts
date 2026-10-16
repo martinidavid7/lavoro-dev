@@ -37,6 +37,19 @@ const router = createRouter({
       props: (route) => ({ id: Number(route.params.id) }),
     },
     {
+      path: '/offerte/:id(\\d+)/candidature',
+      name: 'jobs.applications',
+      component: () => import('@/views/JobApplicationsView.vue'),
+      props: (route) => ({ id: Number(route.params.id) }),
+      meta: { role: 'company' },
+    },
+    {
+      path: '/candidature',
+      name: 'applications',
+      component: () => import('@/views/MyApplicationsView.vue'),
+      meta: { role: 'candidate' },
+    },
+    {
       path: '/aziende/:id(\\d+)',
       name: 'company.show',
       component: () => import('@/views/CompanyView.vue'),
@@ -47,6 +60,12 @@ const router = createRouter({
       name: 'company.profile',
       component: () => import('@/views/CompanyProfileView.vue'),
       meta: { role: 'company' },
+    },
+    {
+      path: '/profilo',
+      name: 'candidate.profile',
+      component: () => import('@/views/CandidateProfileView.vue'),
+      meta: { role: 'candidate' },
     },
     {
       path: '/:path(.*)*',

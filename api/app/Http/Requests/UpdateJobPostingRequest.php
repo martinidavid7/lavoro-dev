@@ -33,6 +33,8 @@ class UpdateJobPostingRequest extends FormRequest
             'salary' => ['sometimes', 'required', 'numeric', 'min:0', 'max:99999999.99', 'decimal:0,2'],
             'work_mode' => ['sometimes', 'required', Rule::enum(WorkMode::class)],
             'contract_type' => ['sometimes', 'required', Rule::enum(ContractType::class)],
+            'skills' => ['sometimes', 'nullable', 'array', 'max:15'],
+            'skills.*' => ['integer', 'distinct', Rule::exists('skills', 'id')],
         ];
     }
 }

@@ -36,5 +36,15 @@ export function useApiForm(errorTitle: string) {
     }
   }
 
-  return { errors, submitting, submit }
+  /** Errors of an array field and of its items: "skills" and "skills.0", "skills.1"… */
+  function errorsFor(field: string): string[] | undefined {
+    const itemErrors = Object.entries(errors.value)
+      .filter(([key]) => key.startsWith(`${field}.`))
+      .flatMap(([, messages]) => messages)
+    const all = [...(errors.value[field] ?? []), ...itemErrors]
+
+    return all.length ? all : undefined
+  }
+
+  return { errors, submitting, submit, errorsFor }
 }
