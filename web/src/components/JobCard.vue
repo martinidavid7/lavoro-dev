@@ -2,20 +2,18 @@
 import { RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useCandidateStore } from '@/stores/candidate'
-import { useFavoritesStore } from '@/stores/favorites'
 import type { JobPosting } from '@/types/jobPosting'
 import { formatCurrency, formatDate } from '@/utils/formatters'
 import AvatarImage from './AvatarImage.vue'
+import FavoriteButton from './FavoriteButton.vue'
 import JobBadges from './JobBadges.vue'
 import SkillBadges from './SkillBadges.vue'
-import StarIcon from './StarIcon.vue'
 
 defineProps<{ job: JobPosting }>()
 defineEmits<{ delete: [job: JobPosting] }>()
 
 const auth = useAuthStore()
 const candidate = useCandidateStore()
-const favorites = useFavoritesStore()
 </script>
 
 <template>
@@ -52,23 +50,7 @@ const favorites = useFavoritesStore()
         </div>
       </div>
 
-      <button
-        type="button"
-        class="rounded-lg p-2 transition"
-        :class="
-          favorites.isFavorite(job.id)
-            ? 'text-amber-500 hover:bg-amber-50'
-            : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'
-        "
-        :aria-pressed="favorites.isFavorite(job.id)"
-        :aria-label="
-          favorites.isFavorite(job.id) ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'
-        "
-        data-test="favorite"
-        @click="favorites.toggle(job)"
-      >
-        <StarIcon class="size-5" :filled="favorites.isFavorite(job.id)" />
-      </button>
+      <FavoriteButton :job="job" />
     </div>
 
     <p class="mt-3 line-clamp-3 text-sm text-slate-600">{{ job.description }}</p>

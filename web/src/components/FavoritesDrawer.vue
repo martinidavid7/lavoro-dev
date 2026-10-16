@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted } from 'vue'
+import { onBeforeUnmount, onMounted, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useFavoritesStore } from '@/stores/favorites'
 
@@ -10,6 +10,14 @@ const favorites = useFavoritesStore()
 function closeOnEscape(event: KeyboardEvent) {
   if (event.key === 'Escape') open.value = false
 }
+
+// Favorites belong to the logged in candidate: close the drawer after logout.
+watch(
+  () => favorites.enabled,
+  (enabled) => {
+    if (!enabled) open.value = false
+  },
+)
 
 onMounted(() => document.addEventListener('keydown', closeOnEscape))
 onBeforeUnmount(() => document.removeEventListener('keydown', closeOnEscape))
@@ -60,13 +68,16 @@ onBeforeUnmount(() => document.removeEventListener('keydown', closeOnEscape))
           :key="job.id"
           class="flex items-center justify-between gap-3 px-5 py-3"
         >
-          <RouterLink
-            :to="{ name: 'jobs.show', params: { id: job.id } }"
-            class="text-sm font-medium text-slate-700 hover:text-indigo-600"
-            @click="open = false"
-          >
-            {{ job.title }}
-          </RouterLink>
+          <div class="min-w-0">
+            <RouterLink
+              :to="{ name: 'jobs.show', params: { id: job.id } }"
+              class="text-sm font-medium text-slate-700 hover:text-indigo-600"
+              @click="open = false"
+            >
+              {{ job.title }}
+            </RouterLink>
+            <p class="truncate text-xs text-slate-500">{{ job.company.name }}</p>
+          </div>
           <button
             type="button"
             class="text-xs text-slate-400 hover:text-red-600"

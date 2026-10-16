@@ -86,6 +86,16 @@ class User extends Authenticatable
         return $this->hasMany(Application::class, 'candidate_id');
     }
 
+    /**
+     * Job postings a candidate saved as favorite.
+     *
+     * @return BelongsToMany<JobPosting, $this>
+     */
+    public function favorites(): BelongsToMany
+    {
+        return $this->belongsToMany(JobPosting::class, 'favorites')->withTimestamps();
+    }
+
     public function isCandidate(): bool
     {
         return $this->role === UserRole::Candidate;

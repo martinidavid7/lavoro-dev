@@ -71,9 +71,11 @@ async function logout() {
           Pubblica un'offerta
         </RouterLink>
         <button
+          v-if="favorites.enabled"
           type="button"
           class="relative ml-1 rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
           aria-label="Apri le offerte preferite"
+          data-test="open-favorites"
           @click="$emit('openFavorites')"
         >
           <StarIcon class="size-5" />

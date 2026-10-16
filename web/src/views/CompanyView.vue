@@ -8,7 +8,6 @@ import { getCompany } from '@/services/companies'
 import { ApiError } from '@/services/http'
 import { deleteJobPosting, listJobPostings } from '@/services/jobPostings'
 import { useAuthStore } from '@/stores/auth'
-import { useFavoritesStore } from '@/stores/favorites'
 import { useNotificationsStore } from '@/stores/notifications'
 import type { Paginated } from '@/types/api'
 import type { Company } from '@/types/company'
@@ -18,7 +17,6 @@ import { displayUrl } from '@/utils/company'
 const props = defineProps<{ id: number }>()
 
 const auth = useAuthStore()
-const favorites = useFavoritesStore()
 const notifications = useNotificationsStore()
 
 const company = ref<Company | null>(null)
@@ -76,7 +74,6 @@ async function remove(job: JobPosting) {
 
   try {
     await deleteJobPosting(job.id)
-    favorites.remove(job.id)
     notifications.success('Offerta eliminata', `"${job.title}" è stata rimossa.`)
     if (company.value) company.value.job_postings_count--
     await loadJobs()

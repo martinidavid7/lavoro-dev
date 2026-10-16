@@ -7,7 +7,6 @@ import ListPagination from '@/components/ListPagination.vue'
 import { deleteJobPosting, listJobPostings } from '@/services/jobPostings'
 import { useAuthStore } from '@/stores/auth'
 import { useCandidateStore } from '@/stores/candidate'
-import { useFavoritesStore } from '@/stores/favorites'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useSkillsStore } from '@/stores/skills'
 import type { Paginated } from '@/types/api'
@@ -18,7 +17,6 @@ const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const candidate = useCandidateStore()
-const favorites = useFavoritesStore()
 const notifications = useNotificationsStore()
 const skills = useSkillsStore()
 
@@ -96,7 +94,6 @@ async function remove(job: JobPosting) {
 
   try {
     await deleteJobPosting(job.id)
-    favorites.remove(job.id)
     notifications.success('Offerta eliminata', `"${job.title}" è stata rimossa.`)
     await load()
   } catch (e) {

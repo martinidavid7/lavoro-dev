@@ -4,15 +4,14 @@ import { RouterLink, useRouter } from 'vue-router'
 import ApplicationStatusBadge from '@/components/ApplicationStatusBadge.vue'
 import ApplyDialog from '@/components/ApplyDialog.vue'
 import AvatarImage from '@/components/AvatarImage.vue'
+import FavoriteButton from '@/components/FavoriteButton.vue'
 import JobBadges from '@/components/JobBadges.vue'
 import SkillBadges from '@/components/SkillBadges.vue'
-import StarIcon from '@/components/StarIcon.vue'
 import { ApiError } from '@/services/http'
 import { deleteJobPosting, getJobPosting } from '@/services/jobPostings'
 import { useApplicationsStore } from '@/stores/applications'
 import { useAuthStore } from '@/stores/auth'
 import { useCandidateStore } from '@/stores/candidate'
-import { useFavoritesStore } from '@/stores/favorites'
 import { useNotificationsStore } from '@/stores/notifications'
 import type { JobPosting } from '@/types/jobPosting'
 import { formatCurrency, formatDate } from '@/utils/formatters'
@@ -23,7 +22,6 @@ const router = useRouter()
 const auth = useAuthStore()
 const applications = useApplicationsStore()
 const candidate = useCandidateStore()
-const favorites = useFavoritesStore()
 const notifications = useNotificationsStore()
 
 const job = ref<JobPosting | null>(null)
@@ -63,7 +61,6 @@ async function remove() {
 
   try {
     await deleteJobPosting(job.value.id)
-    favorites.remove(job.value.id)
     notifications.success('Offerta eliminata')
     router.push({ name: 'home' })
   } catch (e) {
@@ -107,14 +104,7 @@ async function remove() {
         </div>
 
         <div class="flex gap-2">
-          <button type="button" class="btn-secondary" @click="favorites.toggle(job)">
-            <StarIcon
-              class="size-4"
-              :class="{ 'text-amber-500': favorites.isFavorite(job.id) }"
-              :filled="favorites.isFavorite(job.id)"
-            />
-            {{ favorites.isFavorite(job.id) ? 'Nei preferiti' : 'Aggiungi ai preferiti' }}
-          </button>
+          <FavoriteButton :job="job" with-label />
           <button v-if="auth.canManage(job)" type="button" class="btn-danger" @click="remove">
             Elimina
           </button>

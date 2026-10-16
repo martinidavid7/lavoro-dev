@@ -1,12 +1,16 @@
-import { beforeEach, describe, expect, it } from 'vitest'
-import { mount, RouterLinkStub } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { flushPromises, mount, RouterLinkStub } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
+import { routeLocationKey } from 'vue-router'
+import { addFavorite, listFavorites } from '@/services/favorites'
 import { useAuthStore } from '@/stores/auth'
 import { useCandidateStore } from '@/stores/candidate'
 import { useFavoritesStore } from '@/stores/favorites'
 import type { JobPosting } from '@/types/jobPosting'
 import type { User } from '@/types/user'
 import JobCard from '../JobCard.vue'
+
+vi.mock('@/services/favorites')
 
 const job: JobPosting = {
   id: 42,
@@ -35,16 +39,28 @@ const company = (id: number): User => ({
   role_label: 'Azienda',
 })
 
+const candidateUser: User = {
+  id: 3,
+  name: 'Giulia Rossi',
+  email: 'giulia@example.com',
+  role: 'candidate',
+  role_label: 'Candidato',
+}
+
 function mountCard() {
   return mount(JobCard, {
     props: { job },
-    global: { stubs: { RouterLink: RouterLinkStub } },
+    global: {
+      stubs: { RouterLink: RouterLinkStub },
+      provide: { [routeLocationKey as symbol]: { fullPath: '/' } },
+    },
   })
 }
 
 describe('JobCard', () => {
   beforeEach(() => {
-    localStorage.clear()
+    vi.resetAllMocks()
+    vi.mocked(listFavorites).mockResolvedValue([])
     setActivePinia(createPinia())
   })
 
@@ -93,14 +109,28 @@ describe('JobCard', () => {
     expect(skills[0]?.attributes('data-test')).toBe('matching-skill')
   })
 
-  it('marks the job posting as favorite when the star is clicked', async () => {
+  it("saves the job posting in the candidate's favorites when the star is clicked", async () => {
+    useAuthStore().user = candidateUser
     const wrapper = mountCard()
+    await flushPromises()
     const button = wrapper.get('[data-test="favorite"]')
 
     await button.trigger('click')
 
+    expect(addFavorite).toHaveBeenCalledWith(42)
     expect(useFavoritesStore().isFavorite(42)).toBe(true)
     expect(button.attributes('aria-pressed')).toBe('true')
+  })
+
+  it('sends guests to the login page from the star, and hides it from companies', () => {
+    const asGuest = mountCard()
+    expect(asGuest.find('[data-test="favorite"]').exists()).toBe(false)
+    expect(asGuest.find('[data-test="favorite-login"]').exists()).toBe(true)
+
+    useAuthStore().user = company(99)
+    const asCompany = mountCard()
+    expect(asCompany.find('[data-test="favorite"]').exists()).toBe(false)
+    expect(asCompany.find('[data-test="favorite-login"]').exists()).toBe(false)
   })
 
   it('hides the delete button from guests and other companies', () => {

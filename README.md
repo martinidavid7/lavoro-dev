@@ -16,7 +16,7 @@ Tech job board: a **full stack** application with a REST API in **Laravel** and 
 - Candidate profile: contacts, professional profile, links, photo and PDF CV (stored privately, downloaded through the API)
 - Applications: candidates apply with their CV and an optional cover letter, and follow the status in "Le mie candidature"; companies see the applicants of each job posting (profile, matching skills, cover letter, CV) and move them through *In valutazione*, *Colloquio*, *Non selezionato* and *Assunto*
 - Skills from a shared catalog, picked with a searchable multi-select: companies tag their job postings, candidates list their own and filter the job postings that match them, best matches first
-- Favorite job postings persisted in the browser
+- Favorite job postings saved in the candidate's account (guests are asked to log in, companies have none)
 - Feedback notifications, plus loading, empty and error states
 - Italian UI: translated validation messages, euro amounts (gross annual salary, RAL) and Italian date format
 

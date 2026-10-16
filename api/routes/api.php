@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CandidateProfileController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompanyProfileController;
+use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\JobPostingApplicationController;
 use App\Http\Controllers\JobPostingController;
 use App\Http\Controllers\SkillController;
@@ -36,6 +37,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/job-postings/{jobPosting}/applications', [JobPostingApplicationController::class, 'index']);
     Route::post('/job-postings/{jobPosting}/applications', [JobPostingApplicationController::class, 'store']);
     Route::get('/applications', [ApplicationController::class, 'index']);
+
+    Route::get('/favorites', [FavoriteController::class, 'index']);
+    Route::put('/favorites/{jobPosting}', [FavoriteController::class, 'store']);
+    Route::delete('/favorites/{jobPosting}', [FavoriteController::class, 'destroy']);
     Route::patch('/applications/{application}', [ApplicationController::class, 'update']);
     Route::delete('/applications/{application}', [ApplicationController::class, 'destroy']);
     Route::get('/applications/{application}/cv', [ApplicationController::class, 'downloadCv']);
