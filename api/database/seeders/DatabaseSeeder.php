@@ -65,11 +65,41 @@ class DatabaseSeeder extends Seeder
             ->has(JobPosting::factory(5), 'jobPostings')
             ->create();
 
-        JobPosting::all()->each(
-            fn (JobPosting $jobPosting) => $jobPosting->skills()->attach($skills->random(rand(3, 6))->pluck('id')),
-        );
+        JobPosting::all()->each(fn (JobPosting $jobPosting) => $jobPosting->skills()->attach(
+            $this->skillsForRole($jobPosting->title, $skills)->pluck('id'),
+        ));
 
         $this->seedApplications($demoCompany->jobPostings()->first(), $demoCandidate, $skills);
+    }
+
+    /**
+     * Skills that fit each role of JobPostingFactory, so the demo data makes sense.
+     */
+    private const ROLE_SKILLS = [
+        'Sviluppatore Back-end PHP' => ['PHP', 'Laravel', 'MySQL', 'REST API', 'Docker', 'Git', 'PHPUnit'],
+        'Sviluppatore Laravel' => ['PHP', 'Laravel', 'MySQL', 'Redis', 'REST API', 'Pest', 'Vue.js'],
+        'Sviluppatore Front-end Vue.js' => ['Vue.js', 'TypeScript', 'JavaScript', 'Pinia', 'Vite', 'Tailwind CSS', 'Vitest'],
+        'Sviluppatore Full Stack' => ['Vue.js', 'TypeScript', 'PHP', 'Laravel', 'MySQL', 'Docker', 'REST API'],
+        'Sviluppatore React' => ['React', 'TypeScript', 'JavaScript', 'Next.js', 'CSS', 'Jest'],
+        'Data Engineer' => ['Python', 'SQL', 'PostgreSQL', 'AWS', 'Docker', 'Elasticsearch'],
+        'QA Engineer' => ['Cypress', 'Playwright', 'Jest', 'JavaScript', 'CI/CD', 'Agile'],
+        'DevOps Engineer' => ['Docker', 'Kubernetes', 'AWS', 'Terraform', 'CI/CD', 'Linux'],
+        'UX/UI Designer' => ['Figma', 'UX/UI', 'HTML', 'CSS', 'Agile'],
+        'Tech Lead' => ['TypeScript', 'Vue.js', 'Laravel', 'AWS', 'Agile', 'Scrum', 'Git'],
+    ];
+
+    /**
+     * 4 or 5 skills of the role in the job posting title (a random pick for unknown roles).
+     *
+     * @param  Collection<int, Skill>  $skills
+     * @return Collection<int, Skill>
+     */
+    private function skillsForRole(string $title, Collection $skills): Collection
+    {
+        $role = collect(array_keys(self::ROLE_SKILLS))->first(fn (string $role) => str_starts_with($title, $role));
+        $names = $role ? self::ROLE_SKILLS[$role] : $skills->random(5)->pluck('name')->all();
+
+        return $skills->whereIn('name', $names)->shuffle()->take(rand(4, 5));
     }
 
     /**
