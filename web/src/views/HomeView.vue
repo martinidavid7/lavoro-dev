@@ -4,6 +4,7 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import JobCard from '@/components/JobCard.vue'
 import JobFilters from '@/components/JobFilters.vue'
 import ListPagination from '@/components/ListPagination.vue'
+import JobComparisonBar from '@/components/JobComparisonBar.vue'
 import { deleteJobPosting, listJobPostings } from '@/services/jobPostings'
 import { useAuthStore } from '@/stores/auth'
 import { useCandidateStore } from '@/stores/candidate'
@@ -23,6 +24,14 @@ const skills = useSkillsStore()
 const result = ref<Paginated<JobPosting> | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
+const comparedJobs = ref<JobPosting[]>([])
+function toggleComparison(job: JobPosting) {
+  if (comparedJobs.value.some((item) => item.id === job.id)) {
+    comparedJobs.value = comparedJobs.value.filter((item) => item.id !== job.id)
+  } else if (comparedJobs.value.length < 3) {
+    comparedJobs.value.push(job)
+  }
+}
 
 // Filters live in the URL, so a search can be shared and the back button works.
 const filters = computed(() => filtersFromQuery(route.query))
@@ -220,7 +229,16 @@ async function remove(job: JobPosting) {
         class="space-y-4 transition-opacity"
         :class="{ 'opacity-50': loading }"
       >
-        <JobCard v-for="job in result.data" :key="job.id" :job="job" @delete="remove" />
+        <JobCard
+          v-for="job in result.data"
+          :key="job.id"
+          :job="job"
+          comparison-enabled
+          :comparison-selected="comparedJobs.some((item) => item.id === job.id)"
+          :comparison-disabled="comparedJobs.length >= 3"
+          @compare="toggleComparison"
+          @delete="remove"
+        />
       </div>
 
       <div
@@ -250,5 +268,10 @@ async function remove(job: JobPosting) {
     <div v-else class="space-y-4" aria-busy="true">
       <div v-for="n in 3" :key="n" class="h-40 animate-pulse rounded-xl bg-slate-200/70" />
     </div>
+    <JobComparisonBar
+      :jobs="comparedJobs"
+      @remove="(id) => (comparedJobs = comparedJobs.filter((job) => job.id !== id))"
+      @clear="comparedJobs = []"
+    />
   </div>
 </template>

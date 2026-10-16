@@ -25,6 +25,11 @@ const router = createRouter({
       meta: { guestOnly: true },
     },
     {
+      path: '/offerte/confronta',
+      name: 'jobs.compare',
+      component: () => import('@/views/JobComparisonView.vue'),
+    },
+    {
       path: '/offerte/:id(\\d+)/modifica',
       name: 'jobs.edit',
       component: () => import('@/views/EditJobView.vue'),
