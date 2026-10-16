@@ -5,18 +5,17 @@ import FormField from '@/components/FormField.vue'
 import SkillPicker from '@/components/SkillPicker.vue'
 import { useApiForm } from '@/composables/useApiForm'
 import { createJobPosting, updateJobPosting } from '@/services/jobPostings'
+import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
 import {
   CONTRACT_TYPES,
   WORK_MODES,
   type ContractType,
-  type WorkMode,
   type JobPosting,
   type JobPostingPayload,
+  type WorkMode,
 } from '@/types/jobPosting'
-
 import JobPostingPreview from './JobPostingPreview.vue'
-import { useAuthStore } from '@/stores/auth'
 
 const props = defineProps<{ initialJob?: JobPosting }>()
 const auth = useAuthStore()

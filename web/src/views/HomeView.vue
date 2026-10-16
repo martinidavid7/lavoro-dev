@@ -2,12 +2,13 @@
 import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import JobCard from '@/components/JobCard.vue'
+import JobComparisonBar from '@/components/JobComparisonBar.vue'
 import JobFilters from '@/components/JobFilters.vue'
 import ListPagination from '@/components/ListPagination.vue'
-import JobComparisonBar from '@/components/JobComparisonBar.vue'
 import { deleteJobPosting, listJobPostings } from '@/services/jobPostings'
 import { useAuthStore } from '@/stores/auth'
 import { useCandidateStore } from '@/stores/candidate'
+import { useComparisonStore } from '@/stores/comparison'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useSkillsStore } from '@/stores/skills'
 import type { Paginated } from '@/types/api'
@@ -24,14 +25,7 @@ const skills = useSkillsStore()
 const result = ref<Paginated<JobPosting> | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
-const comparedJobs = ref<JobPosting[]>([])
-function toggleComparison(job: JobPosting) {
-  if (comparedJobs.value.some((item) => item.id === job.id)) {
-    comparedJobs.value = comparedJobs.value.filter((item) => item.id !== job.id)
-  } else if (comparedJobs.value.length < 3) {
-    comparedJobs.value.push(job)
-  }
-}
+const comparison = useComparisonStore()
 
 // Filters live in the URL, so a search can be shared and the back button works.
 const filters = computed(() => filtersFromQuery(route.query))
@@ -234,9 +228,9 @@ async function remove(job: JobPosting) {
           :key="job.id"
           :job="job"
           comparison-enabled
-          :comparison-selected="comparedJobs.some((item) => item.id === job.id)"
-          :comparison-disabled="comparedJobs.length >= 3"
-          @compare="toggleComparison"
+          :comparison-selected="comparison.isSelected(job.id)"
+          :comparison-disabled="comparison.isFull"
+          @compare="comparison.toggle"
           @delete="remove"
         />
       </div>
@@ -269,9 +263,9 @@ async function remove(job: JobPosting) {
       <div v-for="n in 3" :key="n" class="h-40 animate-pulse rounded-xl bg-slate-200/70" />
     </div>
     <JobComparisonBar
-      :jobs="comparedJobs"
-      @remove="(id) => (comparedJobs = comparedJobs.filter((job) => job.id !== id))"
-      @clear="comparedJobs = []"
+      :jobs="comparison.jobs"
+      @remove="comparison.remove"
+      @clear="comparison.clear"
     />
   </div>
 </template>

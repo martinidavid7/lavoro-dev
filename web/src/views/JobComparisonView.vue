@@ -4,11 +4,13 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import JobComparisonTable from '@/components/JobComparisonTable.vue'
 import { getJobPosting } from '@/services/jobPostings'
 import { useCandidateStore } from '@/stores/candidate'
+import { useComparisonStore } from '@/stores/comparison'
 import type { JobPosting } from '@/types/jobPosting'
 
 const route = useRoute()
 const router = useRouter()
 const candidate = useCandidateStore()
+const comparison = useComparisonStore()
 const jobs = ref<JobPosting[]>([])
 const loading = ref(false)
 const failed = ref<number[]>([])
@@ -38,6 +40,8 @@ async function load() {
   loading.value = false
 }
 function remove(id: number) {
+  // Also out of the selection kept on the job list.
+  comparison.remove(id)
   router.replace({
     query: { ...route.query, offerte: ids.value.filter((item) => item !== id).join(',') },
   })

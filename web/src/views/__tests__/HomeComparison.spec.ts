@@ -55,4 +55,34 @@ describe('Home job comparison selection', () => {
       wrapper.find('section[aria-label="Offerte selezionate per il confronto"]').exists(),
     ).toBe(false)
   })
+
+  it('keeps the selection after leaving the job list and coming back', async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        { path: '/', name: 'home', component: HomeView },
+        { path: '/confronta', name: 'jobs.compare', component: { template: '<div />' } },
+      ],
+    })
+    await router.push('/')
+    const mountHome = async () => {
+      const wrapper = mount(HomeView, {
+        global: { plugins: [router], stubs: { RouterLink: RouterLinkStub } },
+      })
+      await flushPromises()
+
+      return wrapper
+    }
+
+    const first = await mountHome()
+    await first.findAllComponents(JobCard)[1]!.get('button[aria-pressed]').trigger('click')
+    first.unmount()
+
+    const again = await mountHome()
+
+    expect(again.getComponent(JobComparisonBar).props('jobs')).toHaveLength(1)
+    expect(
+      again.findAllComponents(JobCard)[1]!.get('button[aria-pressed]').attributes('aria-pressed'),
+    ).toBe('true')
+  })
 })
